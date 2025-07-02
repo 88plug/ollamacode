@@ -77,6 +77,60 @@ export namespace Message {
     })
   export type ReasoningPart = z.infer<typeof ReasoningPart>
 
+  export const ToolBasePart = z.object({
+    type: z.custom<`tool-${string}`>(),
+    toolCallId: z.string(),
+  })
+
+  export const ToolInputStreamingPart = ToolBasePart.extend({
+    state: z.literal("input-streaming"),
+    input: z.any(),
+    providerExecuted: z.boolean().optional(),
+  })
+  export type ToolInputStreamingPart = z.infer<typeof ToolInputStreamingPart>
+
+  export const ToolInputAvailablePart = z.object({
+    type: z.custom<`tool-${string}`>(),
+    toolCallId: z.string(),
+    state: z.literal("input-available"),
+    input: z.any(),
+    providerExecuted: z.boolean().optional(),
+  })
+  export type ToolInputAvailablePart = z.infer<typeof ToolInputAvailablePart>
+
+  export const ToolOutputAvailablePart = z.object({
+    type: z.custom<`tool-${string}`>(),
+    toolCallId: z.string(),
+    state: z.literal("output-available"),
+    input: z.any(),
+    output: z.any(),
+    providerExecuted: z.boolean().optional(),
+  })
+  export type ToolOutputAvailablePart = z.infer<typeof ToolOutputAvailablePart>
+
+  export const ToolOutputErrorPart = z.object({
+    type: z.custom<`tool-${string}`>(),
+    toolCallId: z.string(),
+    state: z.literal("output-error"),
+    errorText: z.string(),
+    input: z.any(),
+    providerExecuted: z.boolean().optional(),
+  })
+  export type ToolOutputErrorPart = z.infer<typeof ToolOutputErrorPart>
+
+  export const ToolPart = z.discriminatedUnion("state", [
+    ToolInputStreamingPart,
+    ToolInputAvailablePart,
+    ToolOutputAvailablePart,
+    ToolOutputErrorPart,
+  ])
+  const foo = z
+    .object({
+      foo: z.string(),
+    })
+    .merge(ToolPart)
+  export type ToolPart = z.infer<typeof ToolPart>
+
   export const ToolInvocationPart = z
     .object({
       type: z.literal("tool-invocation"),
@@ -125,7 +179,7 @@ export namespace Message {
     .discriminatedUnion("type", [
       TextPart,
       ReasoningPart,
-      ToolInvocationPart,
+      ToolPart,
       SourceUrlPart,
       FilePart,
       StepStartPart,

@@ -1,5 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openrouter": {
+      "npm": "@ai-sdk/openai-compatible",
+      "api": "https://openrouter.ai/api/v1",
+      "models": {}
+    }
+  },
   "experimental": {
     "hook": {
       "file_edited": {

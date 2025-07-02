@@ -6,12 +6,11 @@ import { Log } from "../util/log"
 import {
   generateText,
   LoadAPIKeyError,
-  convertToCoreMessages,
+  convertToModelMessages,
   streamText,
   tool,
   type Tool as AITool,
   type LanguageModelUsage,
-  type CoreMessage,
   type UIMessage,
   type ProviderMetadata,
   wrapLanguageModel,
@@ -360,20 +359,17 @@ export namespace Session {
     const app = App.info()
     if (msgs.length === 0 && !session.parentID) {
       generateText({
-        maxTokens: input.providerID === "google" ? 1024 : 20,
+        maxOutputTokens: input.providerID === "google" ? 1024 : 20,
         providerOptions: model.info.options,
         messages: [
-          ...SystemPrompt.title(input.providerID).map(
-            (x): CoreMessage => ({
-              role: "system",
-              content: x,
-            }),
-          ),
-          ...convertToCoreMessages([
+          ...SystemPrompt.title(input.providerID).map((x) => ({
+            role: "system",
+            content: x,
+          })),
+          ...convertToModelMessages([
             {
               role: "user",
-              content: "",
-              parts: toParts(input.parts),
+              parts: input.parts,
             },
           ]),
         ],
