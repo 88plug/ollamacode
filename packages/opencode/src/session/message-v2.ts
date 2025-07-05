@@ -3,7 +3,7 @@ import { Bus } from "../bus"
 import { Provider } from "../provider/provider"
 import { NamedError } from "../util/error"
 import { Message } from "./message"
-import type { AssistantContent, ModelMessage, UserContent } from "ai"
+import { convertToModelMessages, type ModelMessage, type UIMessage } from "ai"
 
 export namespace MessageV2 {
   export const OutputLengthError = NamedError.create(
@@ -132,7 +132,6 @@ export namespace MessageV2 {
   export type UserPart = z.infer<typeof UserPart>
 
   export const User = Base.extend({
-    id: z.string(),
     role: z.literal("user"),
     parts: z.array(UserPart),
     time: z.object({
@@ -151,7 +150,6 @@ export namespace MessageV2 {
   export type AssistantPart = z.infer<typeof AssistantPart>
 
   export const Assistant = Base.extend({
-    id: z.string(),
     role: z.literal("assistant"),
     parts: z.array(AssistantPart),
     time: z.object({
@@ -244,6 +242,13 @@ export namespace MessageV2 {
               },
             ]
           }
+          if (part.type === "step-start") {
+            return [
+              {
+                type: "step-start",
+              },
+            ]
+          }
           if (part.type === "tool-invocation") {
             return [
               {
@@ -325,13 +330,15 @@ export namespace MessageV2 {
   }
 
   export function toModelMessage(input: Info[]): ModelMessage[] {
-    const result: ModelMessage[] = []
+    const result: UIMessage[] = []
 
     for (const msg of input) {
+      if (msg.parts.length === 0) continue
       if (msg.role === "user") {
         result.push({
+          id: msg.id,
           role: "user",
-          content: msg.parts.flatMap((part): Exclude<UserContent, string> => {
+          parts: msg.parts.flatMap((part): UIMessage["parts"] => {
             if (part.type === "text")
               return [
                 {
@@ -343,7 +350,7 @@ export namespace MessageV2 {
               return [
                 {
                   type: "file",
-                  data: part.url,
+                  url: part.url,
                   mediaType: part.mime,
                   filename: part.filename,
                 },
@@ -355,62 +362,51 @@ export namespace MessageV2 {
 
       if (msg.role === "assistant") {
         result.push({
+          id: msg.id,
           role: "assistant",
-          content: msg.parts.flatMap(
-            (part): Exclude<AssistantContent, string> => {
-              if (part.type === "text")
+          parts: msg.parts.flatMap((part): UIMessage["parts"] => {
+            if (part.type === "text")
+              return [
+                {
+                  type: "text",
+                  text: part.text,
+                },
+              ]
+            if (part.type === "step-start")
+              return [
+                {
+                  type: "step-start",
+                },
+              ]
+            if (part.type === "tool") {
+              if (part.state.status === "completed")
                 return [
                   {
-                    type: "text",
-                    text: part.text,
+                    type: ("tool-" + part.tool) as `tool-${string}`,
+                    state: "output-available",
+                    toolCallId: part.id,
+                    input: part.state.input,
+                    output: part.state.output,
                   },
                 ]
-              if (part.type === "tool") {
-                if (part.state.status === "completed")
-                  return [
-                    {
-                      type: "tool-call",
-                      input: part.state.input,
-                      toolName: part.tool,
-                      toolCallId: part.id,
-                    },
-                    {
-                      type: "tool-result",
-                      toolCallId: part.id,
-                      toolName: part.tool,
-                      output: {
-                        type: "text",
-                        value: part.state.output,
-                      },
-                    },
-                  ]
-                if (part.state.status === "error")
-                  return [
-                    {
-                      type: "tool-call",
-                      input: part.state.input,
-                      toolName: part.tool,
-                      toolCallId: part.id,
-                    },
-                    {
-                      type: "tool-result",
-                      toolCallId: part.id,
-                      toolName: part.tool,
-                      output: {
-                        type: "text",
-                        value: part.state.error,
-                      },
-                    },
-                  ]
-              }
+              if (part.state.status === "error")
+                return [
+                  {
+                    type: ("tool-" + part.tool) as `tool-${string}`,
+                    state: "output-error",
+                    toolCallId: part.id,
+                    input: part.state.input,
+                    errorText: part.state.error,
+                  },
+                ]
+            }
 
-              return []
-            },
-          ),
+            return []
+          }),
         })
       }
     }
 
-    return result
+    return convertToModelMessages(result)
   }
 }

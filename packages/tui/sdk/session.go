@@ -577,7 +577,7 @@ type Message struct {
 	Parts     interface{} `json:"parts,required"`
 	Role      MessageRole `json:"role,required"`
 	SessionID string      `json:"sessionID,required"`
-	// This field can have the runtime type of [MessageUserMessageTime],
+	// This field can have the runtime type of [UserMessageTime],
 	// [AssistantMessageTime].
 	Time interface{} `json:"time,required"`
 	Cost float64     `json:"cost"`
@@ -631,13 +631,12 @@ func (r *Message) UnmarshalJSON(data []byte) (err error) {
 // AsUnion returns a [MessageUnion] interface which you can cast to the specific
 // types for more type safety.
 //
-// Possible runtime types of the union are [MessageUserMessage],
-// [AssistantMessage].
+// Possible runtime types of the union are [UserMessage], [AssistantMessage].
 func (r Message) AsUnion() MessageUnion {
 	return r.union
 }
 
-// Union satisfied by [MessageUserMessage] or [AssistantMessage].
+// Union satisfied by [UserMessage] or [AssistantMessage].
 type MessageUnion interface {
 	implementsMessage()
 }
@@ -648,7 +647,7 @@ func init() {
 		"role",
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(MessageUserMessage{}),
+			Type:               reflect.TypeOf(UserMessage{}),
 			DiscriminatorValue: "user",
 		},
 		apijson.UnionVariant{
@@ -657,72 +656,6 @@ func init() {
 			DiscriminatorValue: "assistant",
 		},
 	)
-}
-
-type MessageUserMessage struct {
-	ID        string                 `json:"id,required"`
-	Parts     []UserMessagePart      `json:"parts,required"`
-	Role      MessageUserMessageRole `json:"role,required"`
-	SessionID string                 `json:"sessionID,required"`
-	Time      MessageUserMessageTime `json:"time,required"`
-	JSON      messageUserMessageJSON `json:"-"`
-}
-
-// messageUserMessageJSON contains the JSON metadata for the struct
-// [MessageUserMessage]
-type messageUserMessageJSON struct {
-	ID          apijson.Field
-	Parts       apijson.Field
-	Role        apijson.Field
-	SessionID   apijson.Field
-	Time        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *MessageUserMessage) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r messageUserMessageJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r MessageUserMessage) implementsMessage() {}
-
-type MessageUserMessageRole string
-
-const (
-	MessageUserMessageRoleUser MessageUserMessageRole = "user"
-)
-
-func (r MessageUserMessageRole) IsKnown() bool {
-	switch r {
-	case MessageUserMessageRoleUser:
-		return true
-	}
-	return false
-}
-
-type MessageUserMessageTime struct {
-	Created float64                    `json:"created,required"`
-	JSON    messageUserMessageTimeJSON `json:"-"`
-}
-
-// messageUserMessageTimeJSON contains the JSON metadata for the struct
-// [MessageUserMessageTime]
-type messageUserMessageTimeJSON struct {
-	Created     apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *MessageUserMessageTime) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r messageUserMessageTimeJSON) RawJSON() string {
-	return r.raw
 }
 
 type MessageRole string
@@ -1303,6 +1236,70 @@ func (r *ToolStateRunningTime) UnmarshalJSON(data []byte) (err error) {
 }
 
 func (r toolStateRunningTimeJSON) RawJSON() string {
+	return r.raw
+}
+
+type UserMessage struct {
+	ID        string            `json:"id,required"`
+	Parts     []UserMessagePart `json:"parts,required"`
+	Role      UserMessageRole   `json:"role,required"`
+	SessionID string            `json:"sessionID,required"`
+	Time      UserMessageTime   `json:"time,required"`
+	JSON      userMessageJSON   `json:"-"`
+}
+
+// userMessageJSON contains the JSON metadata for the struct [UserMessage]
+type userMessageJSON struct {
+	ID          apijson.Field
+	Parts       apijson.Field
+	Role        apijson.Field
+	SessionID   apijson.Field
+	Time        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *UserMessage) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r userMessageJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r UserMessage) implementsMessage() {}
+
+type UserMessageRole string
+
+const (
+	UserMessageRoleUser UserMessageRole = "user"
+)
+
+func (r UserMessageRole) IsKnown() bool {
+	switch r {
+	case UserMessageRoleUser:
+		return true
+	}
+	return false
+}
+
+type UserMessageTime struct {
+	Created float64             `json:"created,required"`
+	JSON    userMessageTimeJSON `json:"-"`
+}
+
+// userMessageTimeJSON contains the JSON metadata for the struct [UserMessageTime]
+type userMessageTimeJSON struct {
+	Created     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *UserMessageTime) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r userMessageTimeJSON) RawJSON() string {
 	return r.raw
 }
 

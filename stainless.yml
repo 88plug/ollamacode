@@ -83,8 +83,9 @@ resources:
       toolPart: ToolPart
       stepStartPart: StepStartPart
       assistantMessage: AssistantMessage
-      userMessagePart: UserMessagePart
       assistantMessagePart: AssistantMessagePart
+      userMessage: UserMessage
+      userMessagePart: UserMessagePart
       toolStatePending: ToolStatePending
       toolStateRunning: ToolStateRunning
       toolStateCompleted: ToolStateCompleted
