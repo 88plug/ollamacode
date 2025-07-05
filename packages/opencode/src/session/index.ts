@@ -543,15 +543,7 @@ export namespace Session {
       text: "",
     }
     const result = streamText({
-      onStepFinish: async (step) => {},
-      onError(err) {},
-      // async prepareStep(step) {
-      //   next.parts.push({
-      //     type: "step-start",
-      //   })
-      //   await updateMessage(next)
-      //   return step
-      // },
+      onError() {},
       maxRetries: 10,
       maxOutputTokens: Math.max(0, model.info.limit.output) || undefined,
       abortSignal: abort.signal,
@@ -574,6 +566,7 @@ export namespace Session {
           {
             async transformParams(args) {
               if (args.type === "stream") {
+                // @ts-expect-error
                 args.params.prompt = ProviderTransform.message(
                   args.params.prompt,
                   input.providerID,
@@ -770,7 +763,7 @@ export namespace Session {
     return next
   }
 
-  export async function revert(input: {
+  export async function revert(_input: {
     sessionID: string
     messageID: string
     part: number
