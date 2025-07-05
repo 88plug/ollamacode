@@ -41,12 +41,12 @@ export const BashTool = Tool.define({
     const stderr = await new Response(process.stderr).text()
 
     return {
+      title: params.command,
       metadata: {
         stderr,
         stdout,
         exit: process.exitCode,
         description: params.description,
-        title: params.command,
       },
       output: [
         `<stdout>`,

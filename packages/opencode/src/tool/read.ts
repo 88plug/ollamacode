@@ -93,10 +93,10 @@ export const ReadTool = Tool.define({
     FileTime.read(ctx.sessionID, filePath)
 
     return {
+      title: path.relative(App.info().path.root, filePath),
       output,
       metadata: {
         preview,
-        title: path.relative(App.info().path.root, filePath),
       },
     }
   },

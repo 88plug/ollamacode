@@ -2,12 +2,12 @@ import type { Argv } from "yargs"
 import { Bus } from "../../bus"
 import { Provider } from "../../provider/provider"
 import { Session } from "../../session"
-import { Message } from "../../session/message"
 import { UI } from "../ui"
 import { cmd } from "./cmd"
 import { Flag } from "../../flag/flag"
 import { Config } from "../../config/config"
 import { bootstrap } from "../bootstrap"
+import { MessageV2 } from "../../session/message-v2"
 
 const TOOL: Record<string, [string, string]> = {
   todowrite: ["Todo", UI.Style.TEXT_WARNING_BOLD],
@@ -110,24 +110,16 @@ export const RunCommand = cmd({
         )
       }
 
-      Bus.subscribe(Message.Event.PartUpdated, async (evt) => {
+      Bus.subscribe(MessageV2.Event.PartUpdated, async (evt) => {
         if (evt.properties.sessionID !== session.id) return
         const part = evt.properties.part
-        const message = await Session.getMessage(
-          evt.properties.sessionID,
-          evt.properties.messageID,
-        )
 
-        if (
-          part.type === "tool-invocation" &&
-          part.toolInvocation.state === "result"
-        ) {
-          const metadata = message.metadata.tool[part.toolInvocation.toolCallId]
-          const [tool, color] = TOOL[part.toolInvocation.toolName] ?? [
-            part.toolInvocation.toolName,
+        if (part.type === "tool" && part.state.status === "completed") {
+          const [tool, color] = TOOL[part.tool] ?? [
+            part.tool,
             UI.Style.TEXT_INFO_BOLD,
           ]
-          printEvent(color, tool, metadata?.title || "Unknown")
+          printEvent(color, tool, part.state.title || "Unknown")
         }
 
         if (part.type === "text") {

@@ -79,16 +79,14 @@ export const WebFetchTool = Tool.define({
           const text = await extractTextFromHTML(content)
           return {
             output: text,
-            metadata: {
-              title,
-            },
+            title,
+            metadata: {},
           }
         }
         return {
           output: content,
-          metadata: {
-            title,
-          },
+          title,
+          metadata: {},
         }
 
       case "markdown":
@@ -96,32 +94,28 @@ export const WebFetchTool = Tool.define({
           const markdown = convertHTMLToMarkdown(content)
           return {
             output: markdown,
-            metadata: {
-              title,
-            },
+            title,
+            metadata: {},
           }
         }
         return {
           output: "```\n" + content + "\n```",
-          metadata: {
-            title,
-          },
+          title,
+          metadata: {},
         }
 
       case "html":
         return {
           output: content,
-          metadata: {
-            title,
-          },
+          title,
+          metadata: {},
         }
 
       default:
         return {
           output: content,
-          metadata: {
-            title,
-          },
+          title,
+          metadata: {},
         }
     }
   },

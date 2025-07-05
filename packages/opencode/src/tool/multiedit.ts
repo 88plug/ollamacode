@@ -30,9 +30,9 @@ export const MultiEditTool = Tool.define({
     }
     const app = App.info()
     return {
+      title: path.relative(app.path.root, params.filePath),
       metadata: {
         results: results.map((r) => r.metadata),
-        title: path.relative(app.path.root, params.filePath),
       },
       output: results.at(-1)!.output,
     }

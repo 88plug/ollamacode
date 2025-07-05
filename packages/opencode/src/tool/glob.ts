@@ -60,10 +60,10 @@ export const GlobTool = Tool.define({
     }
 
     return {
+      title: path.relative(app.path.root, search),
       metadata: {
         count: files.length,
         truncated,
-        title: path.relative(app.path.root, search),
       },
       output: output.join("\n"),
     }

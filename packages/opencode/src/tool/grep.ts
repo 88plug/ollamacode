@@ -51,7 +51,8 @@ export const GrepTool = Tool.define({
 
     if (exitCode === 1) {
       return {
-        metadata: { matches: 0, truncated: false, title: params.pattern },
+        title: params.pattern,
+        metadata: { matches: 0, truncated: false },
         output: "No files found",
       }
     }
@@ -93,7 +94,8 @@ export const GrepTool = Tool.define({
 
     if (finalMatches.length === 0) {
       return {
-        metadata: { matches: 0, truncated: false, title: params.pattern },
+        title: params.pattern,
+        metadata: { matches: 0, truncated: false },
         output: "No files found",
       }
     }
@@ -120,10 +122,10 @@ export const GrepTool = Tool.define({
     }
 
     return {
+      title: params.pattern,
       metadata: {
         matches: finalMatches.length,
         truncated,
-        title: params.pattern,
       },
       output: outputLines.join("\n"),
     }

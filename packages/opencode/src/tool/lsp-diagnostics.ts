@@ -20,9 +20,9 @@ export const LspDiagnosticTool = Tool.define({
     const diagnostics = await LSP.diagnostics()
     const file = diagnostics[normalized]
     return {
+      title: path.relative(app.path.root, normalized),
       metadata: {
         diagnostics,
-        title: path.relative(app.path.root, normalized),
       },
       output: file?.length
         ? file.map(LSP.Diagnostic.pretty).join("\n")

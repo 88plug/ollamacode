@@ -358,11 +358,11 @@ export const PatchTool = Tool.define({
     const output = result
 
     return {
+      title: `${filesToRead.length} files`,
       metadata: {
         changed: changedFiles,
         additions: totalAdditions,
         removals: totalRemovals,
-        title: `${filesToRead.length} files`,
       },
       output,
     }

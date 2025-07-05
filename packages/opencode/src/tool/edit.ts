@@ -110,8 +110,8 @@ export const EditTool = Tool.define({
       metadata: {
         diagnostics,
         diff,
-        title: `${path.relative(app.path.root, filepath)}`,
       },
+      title: `${path.relative(app.path.root, filepath)}`,
       output,
     }
   },
