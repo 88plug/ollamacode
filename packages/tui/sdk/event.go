@@ -673,7 +673,7 @@ func (r EventListResponseEventMessagePartUpdated) implementsEventListResponse() 
 
 type EventListResponseEventMessagePartUpdatedProperties struct {
 	MessageID string                                                 `json:"messageID,required"`
-	Part      EventListResponseEventMessagePartUpdatedPropertiesPart `json:"part,required"`
+	Part      AssistantMessagePart                                   `json:"part,required"`
 	SessionID string                                                 `json:"sessionID,required"`
 	JSON      eventListResponseEventMessagePartUpdatedPropertiesJSON `json:"-"`
 }
@@ -694,134 +694,6 @@ func (r *EventListResponseEventMessagePartUpdatedProperties) UnmarshalJSON(data 
 
 func (r eventListResponseEventMessagePartUpdatedPropertiesJSON) RawJSON() string {
 	return r.raw
-}
-
-type EventListResponseEventMessagePartUpdatedPropertiesPart struct {
-	Type EventListResponseEventMessagePartUpdatedPropertiesPartType `json:"type,required"`
-	ID   string                                                     `json:"id"`
-	// This field can have the runtime type of [ToolPartState].
-	State interface{}                                                `json:"state"`
-	Text  string                                                     `json:"text"`
-	Tool  string                                                     `json:"tool"`
-	JSON  eventListResponseEventMessagePartUpdatedPropertiesPartJSON `json:"-"`
-	union EventListResponseEventMessagePartUpdatedPropertiesPartUnion
-}
-
-// eventListResponseEventMessagePartUpdatedPropertiesPartJSON contains the JSON
-// metadata for the struct [EventListResponseEventMessagePartUpdatedPropertiesPart]
-type eventListResponseEventMessagePartUpdatedPropertiesPartJSON struct {
-	Type        apijson.Field
-	ID          apijson.Field
-	State       apijson.Field
-	Text        apijson.Field
-	Tool        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r eventListResponseEventMessagePartUpdatedPropertiesPartJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r *EventListResponseEventMessagePartUpdatedPropertiesPart) UnmarshalJSON(data []byte) (err error) {
-	*r = EventListResponseEventMessagePartUpdatedPropertiesPart{}
-	err = apijson.UnmarshalRoot(data, &r.union)
-	if err != nil {
-		return err
-	}
-	return apijson.Port(r.union, &r)
-}
-
-// AsUnion returns a [EventListResponseEventMessagePartUpdatedPropertiesPartUnion]
-// interface which you can cast to the specific types for more type safety.
-//
-// Possible runtime types of the union are [TextPart], [ToolPart],
-// [EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPart].
-func (r EventListResponseEventMessagePartUpdatedPropertiesPart) AsUnion() EventListResponseEventMessagePartUpdatedPropertiesPartUnion {
-	return r.union
-}
-
-// Union satisfied by [TextPart], [ToolPart] or
-// [EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPart].
-type EventListResponseEventMessagePartUpdatedPropertiesPartUnion interface {
-	implementsEventListResponseEventMessagePartUpdatedPropertiesPart()
-}
-
-func init() {
-	apijson.RegisterUnion(
-		reflect.TypeOf((*EventListResponseEventMessagePartUpdatedPropertiesPartUnion)(nil)).Elem(),
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextPart{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolPart{}),
-			DiscriminatorValue: "tool",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPart{}),
-			DiscriminatorValue: "step-start",
-		},
-	)
-}
-
-type EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPart struct {
-	Type EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartType `json:"type,required"`
-	JSON eventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartJSON `json:"-"`
-}
-
-// eventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartJSON contains
-// the JSON metadata for the struct
-// [EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPart]
-type eventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartJSON struct {
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPart) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r eventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPart) implementsEventListResponseEventMessagePartUpdatedPropertiesPart() {
-}
-
-type EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartType string
-
-const (
-	EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartTypeStepStart EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartType = "step-start"
-)
-
-func (r EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartType) IsKnown() bool {
-	switch r {
-	case EventListResponseEventMessagePartUpdatedPropertiesPartStepStartPartTypeStepStart:
-		return true
-	}
-	return false
-}
-
-type EventListResponseEventMessagePartUpdatedPropertiesPartType string
-
-const (
-	EventListResponseEventMessagePartUpdatedPropertiesPartTypeText      EventListResponseEventMessagePartUpdatedPropertiesPartType = "text"
-	EventListResponseEventMessagePartUpdatedPropertiesPartTypeTool      EventListResponseEventMessagePartUpdatedPropertiesPartType = "tool"
-	EventListResponseEventMessagePartUpdatedPropertiesPartTypeStepStart EventListResponseEventMessagePartUpdatedPropertiesPartType = "step-start"
-)
-
-func (r EventListResponseEventMessagePartUpdatedPropertiesPartType) IsKnown() bool {
-	switch r {
-	case EventListResponseEventMessagePartUpdatedPropertiesPartTypeText, EventListResponseEventMessagePartUpdatedPropertiesPartTypeTool, EventListResponseEventMessagePartUpdatedPropertiesPartTypeStepStart:
-		return true
-	}
-	return false
 }
 
 type EventListResponseEventMessagePartUpdatedType string

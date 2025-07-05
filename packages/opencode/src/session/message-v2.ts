@@ -25,6 +25,8 @@ export namespace MessageV2 {
     .object({
       status: z.literal("running"),
       input: z.any(),
+      title: z.string().optional(),
+      metadata: z.record(z.any()).optional(),
       time: z.object({
         start: z.number(),
       }),
@@ -33,7 +35,7 @@ export namespace MessageV2 {
       ref: "ToolStateRunning",
     })
 
-  export const ToolInvocationCompleted = z
+  export const ToolStateCompleted = z
     .object({
       status: z.literal("completed"),
       input: z.any(),
@@ -46,14 +48,29 @@ export namespace MessageV2 {
       }),
     })
     .openapi({
-      ref: "ToolInvocationCompleted",
+      ref: "ToolStateCompleted",
+    })
+
+  export const ToolStateError = z
+    .object({
+      status: z.literal("error"),
+      input: z.any(),
+      error: z.string(),
+      time: z.object({
+        start: z.number(),
+        end: z.number(),
+      }),
+    })
+    .openapi({
+      ref: "ToolStateError",
     })
 
   export const ToolState = z
     .discriminatedUnion("status", [
       ToolStatePending,
       ToolStateRunning,
-      ToolInvocationCompleted,
+      ToolStateCompleted,
+      ToolStateError,
     ])
     .openapi({
       ref: "ToolState",
@@ -348,7 +365,7 @@ export namespace MessageV2 {
                     text: part.text,
                   },
                 ]
-              if (part.type === "tool")
+              if (part.type === "tool") {
                 if (part.state.status === "completed")
                   return [
                     {
@@ -367,6 +384,25 @@ export namespace MessageV2 {
                       },
                     },
                   ]
+                if (part.state.status === "error")
+                  return [
+                    {
+                      type: "tool-call",
+                      input: part.state.input,
+                      toolName: part.tool,
+                      toolCallId: part.id,
+                    },
+                    {
+                      type: "tool-result",
+                      toolCallId: part.id,
+                      toolName: part.tool,
+                      output: {
+                        type: "text",
+                        value: part.state.error,
+                      },
+                    },
+                  ]
+              }
 
               return []
             },

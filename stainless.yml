@@ -81,7 +81,15 @@ resources:
       textPart: TextPart
       filePart: FilePart
       toolPart: ToolPart
+      stepStartPart: StepStartPart
       assistantMessage: AssistantMessage
+      userMessagePart: UserMessagePart
+      assistantMessagePart: AssistantMessagePart
+      toolStatePending: ToolStatePending
+      toolStateRunning: ToolStateRunning
+      toolStateCompleted: ToolStateCompleted
+      toolStateError: ToolStateError
+
     methods:
       list: get /session
       create: post /session

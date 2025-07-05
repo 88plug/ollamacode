@@ -494,24 +494,23 @@ export namespace Session {
         description: item.description,
         inputSchema: item.parameters as ZodSchema,
         async execute(args, opts) {
-          const start = Date.now()
-          try {
-            const result = await item.execute(args, {
-              sessionID: input.sessionID,
-              abort: abort.signal,
-              messageID: next.id,
-              metadata: async (val) => {
-                const match = next.parts.find(
-                  (p): p is MessageV2.ToolPart =>
-                    p.type === "tool" && p.id === opts.toolCallId,
-                )
-                await updateMessage(next)
-              },
-            })
-            return result
-          } catch (e: any) {
-            return e.toString()
-          }
+          const result = await item.execute(args, {
+            sessionID: input.sessionID,
+            abort: abort.signal,
+            messageID: next.id,
+            metadata: async (val) => {
+              const match = next.parts.find(
+                (p): p is MessageV2.ToolPart =>
+                  p.type === "tool" && p.id === opts.toolCallId,
+              )
+              if (match && match.state.status === "running") {
+                match.state.title = val.title
+                match.state.metadata = val.metadata
+              }
+              await updateMessage(next)
+            },
+          })
+          return result
         },
         toModelOutput(result) {
           return {
@@ -526,7 +525,6 @@ export namespace Session {
       const execute = item.execute
       if (!execute) continue
       item.execute = async (args, opts) => {
-        const start = Date.now()
         try {
           const result = await execute(args, opts)
           return result.content
@@ -612,6 +610,9 @@ export namespace Session {
           })
           break
 
+        case "tool-input-delta":
+          break
+
         case "tool-call": {
           const match = next.parts.find(
             (p): p is MessageV2.ToolPart =>
@@ -645,6 +646,30 @@ export namespace Session {
               output: value.output.output,
               metadata: value.output.metadata,
               title: value.output.title,
+              time: {
+                start: match.state.time.start,
+                end: Date.now(),
+              },
+            }
+            Bus.publish(MessageV2.Event.PartUpdated, {
+              part: match,
+              sessionID: next.sessionID,
+              messageID: next.id,
+            })
+          }
+          break
+        }
+
+        case "tool-error": {
+          const match = next.parts.find(
+            (p): p is MessageV2.ToolPart =>
+              p.type === "tool" && p.id === value.toolCallId,
+          )
+          if (match && match.state.status === "running") {
+            match.state = {
+              status: "error",
+              input: value.input,
+              error: (value.error as any).toString(),
               time: {
                 start: match.state.time.start,
                 end: Date.now(),

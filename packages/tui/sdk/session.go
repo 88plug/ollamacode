@@ -195,132 +195,6 @@ func (r assistantMessageJSON) RawJSON() string {
 
 func (r AssistantMessage) implementsMessage() {}
 
-type AssistantMessagePart struct {
-	Type AssistantMessagePartsType `json:"type,required"`
-	ID   string                    `json:"id"`
-	// This field can have the runtime type of [ToolPartState].
-	State interface{}              `json:"state"`
-	Text  string                   `json:"text"`
-	Tool  string                   `json:"tool"`
-	JSON  assistantMessagePartJSON `json:"-"`
-	union AssistantMessagePartsUnion
-}
-
-// assistantMessagePartJSON contains the JSON metadata for the struct
-// [AssistantMessagePart]
-type assistantMessagePartJSON struct {
-	Type        apijson.Field
-	ID          apijson.Field
-	State       apijson.Field
-	Text        apijson.Field
-	Tool        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r assistantMessagePartJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r *AssistantMessagePart) UnmarshalJSON(data []byte) (err error) {
-	*r = AssistantMessagePart{}
-	err = apijson.UnmarshalRoot(data, &r.union)
-	if err != nil {
-		return err
-	}
-	return apijson.Port(r.union, &r)
-}
-
-// AsUnion returns a [AssistantMessagePartsUnion] interface which you can cast to
-// the specific types for more type safety.
-//
-// Possible runtime types of the union are [TextPart], [ToolPart],
-// [AssistantMessagePartsStepStartPart].
-func (r AssistantMessagePart) AsUnion() AssistantMessagePartsUnion {
-	return r.union
-}
-
-// Union satisfied by [TextPart], [ToolPart] or
-// [AssistantMessagePartsStepStartPart].
-type AssistantMessagePartsUnion interface {
-	implementsAssistantMessagePart()
-}
-
-func init() {
-	apijson.RegisterUnion(
-		reflect.TypeOf((*AssistantMessagePartsUnion)(nil)).Elem(),
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextPart{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolPart{}),
-			DiscriminatorValue: "tool",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(AssistantMessagePartsStepStartPart{}),
-			DiscriminatorValue: "step-start",
-		},
-	)
-}
-
-type AssistantMessagePartsStepStartPart struct {
-	Type AssistantMessagePartsStepStartPartType `json:"type,required"`
-	JSON assistantMessagePartsStepStartPartJSON `json:"-"`
-}
-
-// assistantMessagePartsStepStartPartJSON contains the JSON metadata for the struct
-// [AssistantMessagePartsStepStartPart]
-type assistantMessagePartsStepStartPartJSON struct {
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *AssistantMessagePartsStepStartPart) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r assistantMessagePartsStepStartPartJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r AssistantMessagePartsStepStartPart) implementsAssistantMessagePart() {}
-
-type AssistantMessagePartsStepStartPartType string
-
-const (
-	AssistantMessagePartsStepStartPartTypeStepStart AssistantMessagePartsStepStartPartType = "step-start"
-)
-
-func (r AssistantMessagePartsStepStartPartType) IsKnown() bool {
-	switch r {
-	case AssistantMessagePartsStepStartPartTypeStepStart:
-		return true
-	}
-	return false
-}
-
-type AssistantMessagePartsType string
-
-const (
-	AssistantMessagePartsTypeText      AssistantMessagePartsType = "text"
-	AssistantMessagePartsTypeTool      AssistantMessagePartsType = "tool"
-	AssistantMessagePartsTypeStepStart AssistantMessagePartsType = "step-start"
-)
-
-func (r AssistantMessagePartsType) IsKnown() bool {
-	switch r {
-	case AssistantMessagePartsTypeText, AssistantMessagePartsTypeTool, AssistantMessagePartsTypeStepStart:
-		return true
-	}
-	return false
-}
-
 type AssistantMessagePath struct {
 	Cwd  string                   `json:"cwd,required"`
 	Root string                   `json:"root,required"`
@@ -554,6 +428,93 @@ func (r AssistantMessageErrorName) IsKnown() bool {
 	return false
 }
 
+type AssistantMessagePart struct {
+	Type AssistantMessagePartType `json:"type,required"`
+	ID   string                   `json:"id"`
+	// This field can have the runtime type of [ToolPartState].
+	State interface{}              `json:"state"`
+	Text  string                   `json:"text"`
+	Tool  string                   `json:"tool"`
+	JSON  assistantMessagePartJSON `json:"-"`
+	union AssistantMessagePartUnion
+}
+
+// assistantMessagePartJSON contains the JSON metadata for the struct
+// [AssistantMessagePart]
+type assistantMessagePartJSON struct {
+	Type        apijson.Field
+	ID          apijson.Field
+	State       apijson.Field
+	Text        apijson.Field
+	Tool        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r assistantMessagePartJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *AssistantMessagePart) UnmarshalJSON(data []byte) (err error) {
+	*r = AssistantMessagePart{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [AssistantMessagePartUnion] interface which you can cast to
+// the specific types for more type safety.
+//
+// Possible runtime types of the union are [TextPart], [ToolPart], [StepStartPart].
+func (r AssistantMessagePart) AsUnion() AssistantMessagePartUnion {
+	return r.union
+}
+
+// Union satisfied by [TextPart], [ToolPart] or [StepStartPart].
+type AssistantMessagePartUnion interface {
+	implementsAssistantMessagePart()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*AssistantMessagePartUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(TextPart{}),
+			DiscriminatorValue: "text",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ToolPart{}),
+			DiscriminatorValue: "tool",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(StepStartPart{}),
+			DiscriminatorValue: "step-start",
+		},
+	)
+}
+
+type AssistantMessagePartType string
+
+const (
+	AssistantMessagePartTypeText      AssistantMessagePartType = "text"
+	AssistantMessagePartTypeTool      AssistantMessagePartType = "tool"
+	AssistantMessagePartTypeStepStart AssistantMessagePartType = "step-start"
+)
+
+func (r AssistantMessagePartType) IsKnown() bool {
+	switch r {
+	case AssistantMessagePartTypeText, AssistantMessagePartTypeTool, AssistantMessagePartTypeStepStart:
+		return true
+	}
+	return false
+}
+
 type FilePart struct {
 	Mime     string       `json:"mime,required"`
 	Type     FilePartType `json:"type,required"`
@@ -580,7 +541,7 @@ func (r filePartJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r FilePart) implementsMessageUserMessagePart() {}
+func (r FilePart) implementsUserMessagePart() {}
 
 type FilePartType string
 
@@ -607,11 +568,11 @@ func (r FilePartParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-func (r FilePartParam) implementsSessionChatParamsPartUnion() {}
+func (r FilePartParam) implementsUserMessagePartUnionParam() {}
 
 type Message struct {
 	ID string `json:"id,required"`
-	// This field can have the runtime type of [[]MessageUserMessagePart],
+	// This field can have the runtime type of [[]UserMessagePart],
 	// [[]AssistantMessagePart].
 	Parts     interface{} `json:"parts,required"`
 	Role      MessageRole `json:"role,required"`
@@ -699,12 +660,12 @@ func init() {
 }
 
 type MessageUserMessage struct {
-	ID        string                   `json:"id,required"`
-	Parts     []MessageUserMessagePart `json:"parts,required"`
-	Role      MessageUserMessageRole   `json:"role,required"`
-	SessionID string                   `json:"sessionID,required"`
-	Time      MessageUserMessageTime   `json:"time,required"`
-	JSON      messageUserMessageJSON   `json:"-"`
+	ID        string                 `json:"id,required"`
+	Parts     []UserMessagePart      `json:"parts,required"`
+	Role      MessageUserMessageRole `json:"role,required"`
+	SessionID string                 `json:"sessionID,required"`
+	Time      MessageUserMessageTime `json:"time,required"`
+	JSON      messageUserMessageJSON `json:"-"`
 }
 
 // messageUserMessageJSON contains the JSON metadata for the struct
@@ -728,86 +689,6 @@ func (r messageUserMessageJSON) RawJSON() string {
 }
 
 func (r MessageUserMessage) implementsMessage() {}
-
-type MessageUserMessagePart struct {
-	Type     MessageUserMessagePartsType `json:"type,required"`
-	Filename string                      `json:"filename"`
-	Mime     string                      `json:"mime"`
-	Text     string                      `json:"text"`
-	URL      string                      `json:"url"`
-	JSON     messageUserMessagePartJSON  `json:"-"`
-	union    MessageUserMessagePartsUnion
-}
-
-// messageUserMessagePartJSON contains the JSON metadata for the struct
-// [MessageUserMessagePart]
-type messageUserMessagePartJSON struct {
-	Type        apijson.Field
-	Filename    apijson.Field
-	Mime        apijson.Field
-	Text        apijson.Field
-	URL         apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r messageUserMessagePartJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r *MessageUserMessagePart) UnmarshalJSON(data []byte) (err error) {
-	*r = MessageUserMessagePart{}
-	err = apijson.UnmarshalRoot(data, &r.union)
-	if err != nil {
-		return err
-	}
-	return apijson.Port(r.union, &r)
-}
-
-// AsUnion returns a [MessageUserMessagePartsUnion] interface which you can cast to
-// the specific types for more type safety.
-//
-// Possible runtime types of the union are [TextPart], [FilePart].
-func (r MessageUserMessagePart) AsUnion() MessageUserMessagePartsUnion {
-	return r.union
-}
-
-// Union satisfied by [TextPart] or [FilePart].
-type MessageUserMessagePartsUnion interface {
-	implementsMessageUserMessagePart()
-}
-
-func init() {
-	apijson.RegisterUnion(
-		reflect.TypeOf((*MessageUserMessagePartsUnion)(nil)).Elem(),
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextPart{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(FilePart{}),
-			DiscriminatorValue: "file",
-		},
-	)
-}
-
-type MessageUserMessagePartsType string
-
-const (
-	MessageUserMessagePartsTypeText MessageUserMessagePartsType = "text"
-	MessageUserMessagePartsTypeFile MessageUserMessagePartsType = "file"
-)
-
-func (r MessageUserMessagePartsType) IsKnown() bool {
-	switch r {
-	case MessageUserMessagePartsTypeText, MessageUserMessagePartsTypeFile:
-		return true
-	}
-	return false
-}
 
 type MessageUserMessageRole string
 
@@ -957,6 +838,42 @@ func (r sessionShareJSON) RawJSON() string {
 	return r.raw
 }
 
+type StepStartPart struct {
+	Type StepStartPartType `json:"type,required"`
+	JSON stepStartPartJSON `json:"-"`
+}
+
+// stepStartPartJSON contains the JSON metadata for the struct [StepStartPart]
+type stepStartPartJSON struct {
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *StepStartPart) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r stepStartPartJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r StepStartPart) implementsAssistantMessagePart() {}
+
+type StepStartPartType string
+
+const (
+	StepStartPartTypeStepStart StepStartPartType = "step-start"
+)
+
+func (r StepStartPartType) IsKnown() bool {
+	switch r {
+	case StepStartPartTypeStepStart:
+		return true
+	}
+	return false
+}
+
 type TextPart struct {
 	Text string       `json:"text,required"`
 	Type TextPartType `json:"type,required"`
@@ -979,11 +896,9 @@ func (r textPartJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r TextPart) implementsEventListResponseEventMessagePartUpdatedPropertiesPart() {}
-
 func (r TextPart) implementsAssistantMessagePart() {}
 
-func (r TextPart) implementsMessageUserMessagePart() {}
+func (r TextPart) implementsUserMessagePart() {}
 
 type TextPartType string
 
@@ -1008,7 +923,7 @@ func (r TextPartParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-func (r TextPartParam) implementsSessionChatParamsPartUnion() {}
+func (r TextPartParam) implementsUserMessagePartUnionParam() {}
 
 type ToolPart struct {
 	ID    string        `json:"id,required"`
@@ -1036,19 +951,18 @@ func (r toolPartJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r ToolPart) implementsEventListResponseEventMessagePartUpdatedPropertiesPart() {}
-
 func (r ToolPart) implementsAssistantMessagePart() {}
 
 type ToolPartState struct {
 	Status ToolPartStateStatus `json:"status,required"`
+	Error  string              `json:"error"`
 	// This field can have the runtime type of [interface{}].
 	Input interface{} `json:"input"`
 	// This field can have the runtime type of [map[string]interface{}].
 	Metadata interface{} `json:"metadata"`
 	Output   string      `json:"output"`
-	// This field can have the runtime type of [ToolPartStateToolStateRunningTime],
-	// [ToolPartStateToolInvocationCompletedTime].
+	// This field can have the runtime type of [ToolStateRunningTime],
+	// [ToolStateCompletedTime], [ToolStateErrorTime].
 	Time  interface{}       `json:"time"`
 	Title string            `json:"title"`
 	JSON  toolPartStateJSON `json:"-"`
@@ -1058,6 +972,7 @@ type ToolPartState struct {
 // toolPartStateJSON contains the JSON metadata for the struct [ToolPartState]
 type toolPartStateJSON struct {
 	Status      apijson.Field
+	Error       apijson.Field
 	Input       apijson.Field
 	Metadata    apijson.Field
 	Output      apijson.Field
@@ -1083,14 +998,14 @@ func (r *ToolPartState) UnmarshalJSON(data []byte) (err error) {
 // AsUnion returns a [ToolPartStateUnion] interface which you can cast to the
 // specific types for more type safety.
 //
-// Possible runtime types of the union are [ToolPartStateToolStatePending],
-// [ToolPartStateToolStateRunning], [ToolPartStateToolInvocationCompleted].
+// Possible runtime types of the union are [ToolStatePending], [ToolStateRunning],
+// [ToolStateCompleted], [ToolStateError].
 func (r ToolPartState) AsUnion() ToolPartStateUnion {
 	return r.union
 }
 
-// Union satisfied by [ToolPartStateToolStatePending],
-// [ToolPartStateToolStateRunning] or [ToolPartStateToolInvocationCompleted].
+// Union satisfied by [ToolStatePending], [ToolStateRunning], [ToolStateCompleted]
+// or [ToolStateError].
 type ToolPartStateUnion interface {
 	implementsToolPartState()
 }
@@ -1101,189 +1016,25 @@ func init() {
 		"status",
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolPartStateToolStatePending{}),
+			Type:               reflect.TypeOf(ToolStatePending{}),
 			DiscriminatorValue: "pending",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolPartStateToolStateRunning{}),
+			Type:               reflect.TypeOf(ToolStateRunning{}),
 			DiscriminatorValue: "running",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolPartStateToolInvocationCompleted{}),
+			Type:               reflect.TypeOf(ToolStateCompleted{}),
 			DiscriminatorValue: "completed",
 		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ToolStateError{}),
+			DiscriminatorValue: "error",
+		},
 	)
-}
-
-type ToolPartStateToolStatePending struct {
-	Status ToolPartStateToolStatePendingStatus `json:"status,required"`
-	JSON   toolPartStateToolStatePendingJSON   `json:"-"`
-}
-
-// toolPartStateToolStatePendingJSON contains the JSON metadata for the struct
-// [ToolPartStateToolStatePending]
-type toolPartStateToolStatePendingJSON struct {
-	Status      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ToolPartStateToolStatePending) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r toolPartStateToolStatePendingJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r ToolPartStateToolStatePending) implementsToolPartState() {}
-
-type ToolPartStateToolStatePendingStatus string
-
-const (
-	ToolPartStateToolStatePendingStatusPending ToolPartStateToolStatePendingStatus = "pending"
-)
-
-func (r ToolPartStateToolStatePendingStatus) IsKnown() bool {
-	switch r {
-	case ToolPartStateToolStatePendingStatusPending:
-		return true
-	}
-	return false
-}
-
-type ToolPartStateToolStateRunning struct {
-	Status ToolPartStateToolStateRunningStatus `json:"status,required"`
-	Time   ToolPartStateToolStateRunningTime   `json:"time,required"`
-	Input  interface{}                         `json:"input"`
-	JSON   toolPartStateToolStateRunningJSON   `json:"-"`
-}
-
-// toolPartStateToolStateRunningJSON contains the JSON metadata for the struct
-// [ToolPartStateToolStateRunning]
-type toolPartStateToolStateRunningJSON struct {
-	Status      apijson.Field
-	Time        apijson.Field
-	Input       apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ToolPartStateToolStateRunning) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r toolPartStateToolStateRunningJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r ToolPartStateToolStateRunning) implementsToolPartState() {}
-
-type ToolPartStateToolStateRunningStatus string
-
-const (
-	ToolPartStateToolStateRunningStatusRunning ToolPartStateToolStateRunningStatus = "running"
-)
-
-func (r ToolPartStateToolStateRunningStatus) IsKnown() bool {
-	switch r {
-	case ToolPartStateToolStateRunningStatusRunning:
-		return true
-	}
-	return false
-}
-
-type ToolPartStateToolStateRunningTime struct {
-	Start float64                               `json:"start,required"`
-	JSON  toolPartStateToolStateRunningTimeJSON `json:"-"`
-}
-
-// toolPartStateToolStateRunningTimeJSON contains the JSON metadata for the struct
-// [ToolPartStateToolStateRunningTime]
-type toolPartStateToolStateRunningTimeJSON struct {
-	Start       apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ToolPartStateToolStateRunningTime) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r toolPartStateToolStateRunningTimeJSON) RawJSON() string {
-	return r.raw
-}
-
-type ToolPartStateToolInvocationCompleted struct {
-	Metadata map[string]interface{}                     `json:"metadata,required"`
-	Output   string                                     `json:"output,required"`
-	Status   ToolPartStateToolInvocationCompletedStatus `json:"status,required"`
-	Time     ToolPartStateToolInvocationCompletedTime   `json:"time,required"`
-	Title    string                                     `json:"title,required"`
-	Input    interface{}                                `json:"input"`
-	JSON     toolPartStateToolInvocationCompletedJSON   `json:"-"`
-}
-
-// toolPartStateToolInvocationCompletedJSON contains the JSON metadata for the
-// struct [ToolPartStateToolInvocationCompleted]
-type toolPartStateToolInvocationCompletedJSON struct {
-	Metadata    apijson.Field
-	Output      apijson.Field
-	Status      apijson.Field
-	Time        apijson.Field
-	Title       apijson.Field
-	Input       apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ToolPartStateToolInvocationCompleted) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r toolPartStateToolInvocationCompletedJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r ToolPartStateToolInvocationCompleted) implementsToolPartState() {}
-
-type ToolPartStateToolInvocationCompletedStatus string
-
-const (
-	ToolPartStateToolInvocationCompletedStatusCompleted ToolPartStateToolInvocationCompletedStatus = "completed"
-)
-
-func (r ToolPartStateToolInvocationCompletedStatus) IsKnown() bool {
-	switch r {
-	case ToolPartStateToolInvocationCompletedStatusCompleted:
-		return true
-	}
-	return false
-}
-
-type ToolPartStateToolInvocationCompletedTime struct {
-	End   float64                                      `json:"end,required"`
-	Start float64                                      `json:"start,required"`
-	JSON  toolPartStateToolInvocationCompletedTimeJSON `json:"-"`
-}
-
-// toolPartStateToolInvocationCompletedTimeJSON contains the JSON metadata for the
-// struct [ToolPartStateToolInvocationCompletedTime]
-type toolPartStateToolInvocationCompletedTimeJSON struct {
-	End         apijson.Field
-	Start       apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ToolPartStateToolInvocationCompletedTime) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r toolPartStateToolInvocationCompletedTimeJSON) RawJSON() string {
-	return r.raw
 }
 
 type ToolPartStateStatus string
@@ -1292,11 +1043,12 @@ const (
 	ToolPartStateStatusPending   ToolPartStateStatus = "pending"
 	ToolPartStateStatusRunning   ToolPartStateStatus = "running"
 	ToolPartStateStatusCompleted ToolPartStateStatus = "completed"
+	ToolPartStateStatusError     ToolPartStateStatus = "error"
 )
 
 func (r ToolPartStateStatus) IsKnown() bool {
 	switch r {
-	case ToolPartStateStatusPending, ToolPartStateStatusRunning, ToolPartStateStatusCompleted:
+	case ToolPartStateStatusPending, ToolPartStateStatusRunning, ToolPartStateStatusCompleted, ToolPartStateStatusError:
 		return true
 	}
 	return false
@@ -1316,48 +1068,350 @@ func (r ToolPartType) IsKnown() bool {
 	return false
 }
 
+type ToolStateCompleted struct {
+	Metadata map[string]interface{}   `json:"metadata,required"`
+	Output   string                   `json:"output,required"`
+	Status   ToolStateCompletedStatus `json:"status,required"`
+	Time     ToolStateCompletedTime   `json:"time,required"`
+	Title    string                   `json:"title,required"`
+	Input    interface{}              `json:"input"`
+	JSON     toolStateCompletedJSON   `json:"-"`
+}
+
+// toolStateCompletedJSON contains the JSON metadata for the struct
+// [ToolStateCompleted]
+type toolStateCompletedJSON struct {
+	Metadata    apijson.Field
+	Output      apijson.Field
+	Status      apijson.Field
+	Time        apijson.Field
+	Title       apijson.Field
+	Input       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolStateCompleted) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolStateCompletedJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ToolStateCompleted) implementsToolPartState() {}
+
+type ToolStateCompletedStatus string
+
+const (
+	ToolStateCompletedStatusCompleted ToolStateCompletedStatus = "completed"
+)
+
+func (r ToolStateCompletedStatus) IsKnown() bool {
+	switch r {
+	case ToolStateCompletedStatusCompleted:
+		return true
+	}
+	return false
+}
+
+type ToolStateCompletedTime struct {
+	End   float64                    `json:"end,required"`
+	Start float64                    `json:"start,required"`
+	JSON  toolStateCompletedTimeJSON `json:"-"`
+}
+
+// toolStateCompletedTimeJSON contains the JSON metadata for the struct
+// [ToolStateCompletedTime]
+type toolStateCompletedTimeJSON struct {
+	End         apijson.Field
+	Start       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolStateCompletedTime) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolStateCompletedTimeJSON) RawJSON() string {
+	return r.raw
+}
+
+type ToolStateError struct {
+	Error  string               `json:"error,required"`
+	Status ToolStateErrorStatus `json:"status,required"`
+	Time   ToolStateErrorTime   `json:"time,required"`
+	Input  interface{}          `json:"input"`
+	JSON   toolStateErrorJSON   `json:"-"`
+}
+
+// toolStateErrorJSON contains the JSON metadata for the struct [ToolStateError]
+type toolStateErrorJSON struct {
+	Error       apijson.Field
+	Status      apijson.Field
+	Time        apijson.Field
+	Input       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolStateError) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolStateErrorJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ToolStateError) implementsToolPartState() {}
+
+type ToolStateErrorStatus string
+
+const (
+	ToolStateErrorStatusError ToolStateErrorStatus = "error"
+)
+
+func (r ToolStateErrorStatus) IsKnown() bool {
+	switch r {
+	case ToolStateErrorStatusError:
+		return true
+	}
+	return false
+}
+
+type ToolStateErrorTime struct {
+	End   float64                `json:"end,required"`
+	Start float64                `json:"start,required"`
+	JSON  toolStateErrorTimeJSON `json:"-"`
+}
+
+// toolStateErrorTimeJSON contains the JSON metadata for the struct
+// [ToolStateErrorTime]
+type toolStateErrorTimeJSON struct {
+	End         apijson.Field
+	Start       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolStateErrorTime) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolStateErrorTimeJSON) RawJSON() string {
+	return r.raw
+}
+
+type ToolStatePending struct {
+	Status ToolStatePendingStatus `json:"status,required"`
+	JSON   toolStatePendingJSON   `json:"-"`
+}
+
+// toolStatePendingJSON contains the JSON metadata for the struct
+// [ToolStatePending]
+type toolStatePendingJSON struct {
+	Status      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolStatePending) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolStatePendingJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ToolStatePending) implementsToolPartState() {}
+
+type ToolStatePendingStatus string
+
+const (
+	ToolStatePendingStatusPending ToolStatePendingStatus = "pending"
+)
+
+func (r ToolStatePendingStatus) IsKnown() bool {
+	switch r {
+	case ToolStatePendingStatusPending:
+		return true
+	}
+	return false
+}
+
+type ToolStateRunning struct {
+	Status   ToolStateRunningStatus `json:"status,required"`
+	Time     ToolStateRunningTime   `json:"time,required"`
+	Input    interface{}            `json:"input"`
+	Metadata map[string]interface{} `json:"metadata"`
+	Title    string                 `json:"title"`
+	JSON     toolStateRunningJSON   `json:"-"`
+}
+
+// toolStateRunningJSON contains the JSON metadata for the struct
+// [ToolStateRunning]
+type toolStateRunningJSON struct {
+	Status      apijson.Field
+	Time        apijson.Field
+	Input       apijson.Field
+	Metadata    apijson.Field
+	Title       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolStateRunning) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolStateRunningJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ToolStateRunning) implementsToolPartState() {}
+
+type ToolStateRunningStatus string
+
+const (
+	ToolStateRunningStatusRunning ToolStateRunningStatus = "running"
+)
+
+func (r ToolStateRunningStatus) IsKnown() bool {
+	switch r {
+	case ToolStateRunningStatusRunning:
+		return true
+	}
+	return false
+}
+
+type ToolStateRunningTime struct {
+	Start float64                  `json:"start,required"`
+	JSON  toolStateRunningTimeJSON `json:"-"`
+}
+
+// toolStateRunningTimeJSON contains the JSON metadata for the struct
+// [ToolStateRunningTime]
+type toolStateRunningTimeJSON struct {
+	Start       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolStateRunningTime) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r toolStateRunningTimeJSON) RawJSON() string {
+	return r.raw
+}
+
+type UserMessagePart struct {
+	Type     UserMessagePartType `json:"type,required"`
+	Filename string              `json:"filename"`
+	Mime     string              `json:"mime"`
+	Text     string              `json:"text"`
+	URL      string              `json:"url"`
+	JSON     userMessagePartJSON `json:"-"`
+	union    UserMessagePartUnion
+}
+
+// userMessagePartJSON contains the JSON metadata for the struct [UserMessagePart]
+type userMessagePartJSON struct {
+	Type        apijson.Field
+	Filename    apijson.Field
+	Mime        apijson.Field
+	Text        apijson.Field
+	URL         apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r userMessagePartJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *UserMessagePart) UnmarshalJSON(data []byte) (err error) {
+	*r = UserMessagePart{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [UserMessagePartUnion] interface which you can cast to the
+// specific types for more type safety.
+//
+// Possible runtime types of the union are [TextPart], [FilePart].
+func (r UserMessagePart) AsUnion() UserMessagePartUnion {
+	return r.union
+}
+
+// Union satisfied by [TextPart] or [FilePart].
+type UserMessagePartUnion interface {
+	implementsUserMessagePart()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*UserMessagePartUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(TextPart{}),
+			DiscriminatorValue: "text",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(FilePart{}),
+			DiscriminatorValue: "file",
+		},
+	)
+}
+
+type UserMessagePartType string
+
+const (
+	UserMessagePartTypeText UserMessagePartType = "text"
+	UserMessagePartTypeFile UserMessagePartType = "file"
+)
+
+func (r UserMessagePartType) IsKnown() bool {
+	switch r {
+	case UserMessagePartTypeText, UserMessagePartTypeFile:
+		return true
+	}
+	return false
+}
+
+type UserMessagePartParam struct {
+	Type     param.Field[UserMessagePartType] `json:"type,required"`
+	Filename param.Field[string]              `json:"filename"`
+	Mime     param.Field[string]              `json:"mime"`
+	Text     param.Field[string]              `json:"text"`
+	URL      param.Field[string]              `json:"url"`
+}
+
+func (r UserMessagePartParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r UserMessagePartParam) implementsUserMessagePartUnionParam() {}
+
+// Satisfied by [TextPartParam], [FilePartParam], [UserMessagePartParam].
+type UserMessagePartUnionParam interface {
+	implementsUserMessagePartUnionParam()
+}
+
 type SessionChatParams struct {
-	ModelID    param.Field[string]                       `json:"modelID,required"`
-	Parts      param.Field[[]SessionChatParamsPartUnion] `json:"parts,required"`
-	ProviderID param.Field[string]                       `json:"providerID,required"`
+	ModelID    param.Field[string]                      `json:"modelID,required"`
+	Parts      param.Field[[]UserMessagePartUnionParam] `json:"parts,required"`
+	ProviderID param.Field[string]                      `json:"providerID,required"`
 }
 
 func (r SessionChatParams) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
-}
-
-type SessionChatParamsPart struct {
-	Type     param.Field[SessionChatParamsPartsType] `json:"type,required"`
-	Filename param.Field[string]                     `json:"filename"`
-	Mime     param.Field[string]                     `json:"mime"`
-	Text     param.Field[string]                     `json:"text"`
-	URL      param.Field[string]                     `json:"url"`
-}
-
-func (r SessionChatParamsPart) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-func (r SessionChatParamsPart) implementsSessionChatParamsPartUnion() {}
-
-// Satisfied by [TextPartParam], [FilePartParam], [SessionChatParamsPart].
-type SessionChatParamsPartUnion interface {
-	implementsSessionChatParamsPartUnion()
-}
-
-type SessionChatParamsPartsType string
-
-const (
-	SessionChatParamsPartsTypeText SessionChatParamsPartsType = "text"
-	SessionChatParamsPartsTypeFile SessionChatParamsPartsType = "file"
-)
-
-func (r SessionChatParamsPartsType) IsKnown() bool {
-	switch r {
-	case SessionChatParamsPartsTypeText, SessionChatParamsPartsTypeFile:
-		return true
-	}
-	return false
 }
 
 type SessionInitParams struct {
