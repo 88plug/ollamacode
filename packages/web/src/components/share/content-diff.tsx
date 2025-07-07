@@ -160,18 +160,10 @@ export function ContentDiff(props: Props) {
         {rows().map((r) => (
           <div data-component="diff-row" data-type={r.type}>
             <div data-slot="before" data-diff-type={r.type === "removed" || r.type === "modified" ? "removed" : ""}>
-              <ContentCode
-                code={r.left}
-                flush
-                lang={props.lang}
-              />
+              <ContentCode code={r.left} flush lang={props.lang} />
             </div>
             <div data-slot="after" data-diff-type={r.type === "added" || r.type === "modified" ? "added" : ""}>
-              <ContentCode
-                code={r.right}
-                lang={props.lang}
-                flush
-              />
+              <ContentCode code={r.right} lang={props.lang} flush />
             </div>
           </div>
         ))}
@@ -194,7 +186,6 @@ export function ContentDiff(props: Props) {
     </div>
   )
 }
-
 
 // const testDiff = `--- combined_before.txt	2025-06-24 16:38:08
 // +++ combined_after.txt	2025-06-24 16:38:12

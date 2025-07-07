@@ -24,10 +24,7 @@ export default defineConfig({
     host: "0.0.0.0",
   },
   markdown: {
-    rehypePlugins: [
-      rehypeHeadingIds,
-      [rehypeAutolinkHeadings, { behavior: "wrap" }],
-    ],
+    rehypePlugins: [rehypeHeadingIds, [rehypeAutolinkHeadings, { behavior: "wrap" }]],
   },
   integrations: [
     solidJs(),
@@ -36,7 +33,7 @@ export default defineConfig({
       expressiveCode: { themes: ["github-light", "github-dark"] },
       social: [
         { icon: "github", label: "GitHub", href: config.github },
-        { icon: "discord", label: "Dscord", href: config.discord }
+        { icon: "discord", label: "Dscord", href: config.discord },
       ],
       head: [
         {

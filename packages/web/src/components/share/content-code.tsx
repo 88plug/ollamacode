@@ -30,4 +30,3 @@ export function ContentCode(props: Props) {
     </Suspense>
   )
 }
-

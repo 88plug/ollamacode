@@ -24,16 +24,8 @@ export const ListTool = Tool.define({
   id: "list",
   description: DESCRIPTION,
   parameters: z.object({
-    path: z
-      .string()
-      .describe(
-        "The absolute path to the directory to list (must be absolute, not relative)",
-      )
-      .optional(),
-    ignore: z
-      .array(z.string())
-      .describe("List of glob patterns to ignore")
-      .optional(),
+    path: z.string().describe("The absolute path to the directory to list (must be absolute, not relative)").optional(),
+    ignore: z.array(z.string()).describe("List of glob patterns to ignore").optional(),
   }),
   async execute(params) {
     const app = App.info()
@@ -44,8 +36,7 @@ export const ListTool = Tool.define({
 
     for await (const file of glob.scan({ cwd: searchPath, dot: true })) {
       if (IGNORE_PATTERNS.some((p) => file.includes(p))) continue
-      if (params.ignore?.some((pattern) => new Bun.Glob(pattern).match(file)))
-        continue
+      if (params.ignore?.some((pattern) => new Bun.Glob(pattern).match(file))) continue
       files.push(file)
       if (files.length >= LIMIT) break
     }

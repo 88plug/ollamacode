@@ -10,9 +10,7 @@ export const MultiEditTool = Tool.define({
   description: DESCRIPTION,
   parameters: z.object({
     filePath: z.string().describe("The absolute path to the file to modify"),
-    edits: z
-      .array(EditTool.parameters)
-      .describe("Array of edit operations to perform sequentially on the file"),
+    edits: z.array(EditTool.parameters).describe("Array of edit operations to perform sequentially on the file"),
   }),
   async execute(params, ctx) {
     const results = []

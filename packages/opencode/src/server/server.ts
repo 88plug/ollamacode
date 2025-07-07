@@ -51,12 +51,9 @@ export namespace Server {
             status: 400,
           })
         }
-        return c.json(
-          new NamedError.Unknown({ message: err.toString() }).toObject(),
-          {
-            status: 400,
-          },
-        )
+        return c.json(new NamedError.Unknown({ message: err.toString() }).toObject(), {
+          status: 400,
+        })
       })
       .use(async (c, next) => {
         log.info("request", {
@@ -481,15 +478,10 @@ export namespace Server {
           },
         }),
         async (c) => {
-          const providers = await Provider.list().then((x) =>
-            mapValues(x, (item) => item.info),
-          )
+          const providers = await Provider.list().then((x) => mapValues(x, (item) => item.info))
           return c.json({
             providers: Object.values(providers),
-            default: mapValues(
-              providers,
-              (item) => Provider.sort(Object.values(item.models))[0].id,
-            ),
+            default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
           })
         },
       )

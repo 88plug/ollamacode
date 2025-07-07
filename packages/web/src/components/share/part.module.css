@@ -45,10 +45,8 @@
       }
 
       [data-copied] & {
-
         a,
         a:hover {
-
           svg:nth-child(1),
           svg:nth-child(2) {
             display: none;
@@ -227,7 +225,7 @@
         border-bottom: none;
       }
 
-      &>span {
+      & > span {
         position: absolute;
         display: inline-block;
         left: 0.5rem;
@@ -237,7 +235,8 @@
         border: 1px solid var(--sl-color-divider);
         border-radius: 0.15rem;
 
-        &::before {}
+        &::before {
+        }
       }
 
       &[data-status="pending"] {
@@ -247,11 +246,11 @@
       &[data-status="in_progress"] {
         color: var(--sl-color-text);
 
-        &>span {
+        & > span {
           border-color: var(--sl-color-orange);
         }
 
-        &>span::before {
+        & > span::before {
           content: "";
           position: absolute;
           top: 2px;
@@ -265,11 +264,11 @@
       &[data-status="completed"] {
         color: var(--sl-color-text-secondary);
 
-        &>span {
+        & > span {
           border-color: var(--sl-color-green-low);
         }
 
-        &>span::before {
+        & > span::before {
           content: "";
           position: absolute;
           top: 2px;
@@ -305,13 +304,13 @@
       text-align: center;
       padding: 0 3.25rem;
 
-      >span {
+      > span {
         max-width: min(100%, 140ch);
         display: inline-block;
         white-space: nowrap;
         overflow: hidden;
         line-height: 1.625rem;
-        font-size: .75rem;
+        font-size: 0.75rem;
         text-overflow: ellipsis;
         color: var(--sl-color-text-dimmed);
       }
@@ -323,7 +322,7 @@
         top: 8px;
         left: 10px;
         width: 2rem;
-        height: .5rem;
+        height: 0.5rem;
         line-height: 0;
         background-color: var(--sl-color-hairline);
         mask-image: var(--term-icon);
@@ -334,13 +333,13 @@
     [data-slot="content"] {
       display: flex;
       flex-direction: column;
-      padding: .5rem calc(.5rem + 3px);
+      padding: 0.5rem calc(0.5rem + 3px);
 
       pre {
         --shiki-dark-bg: var(--sl-color-bg) !important;
         background-color: var(--sl-color-bg) !important;
         line-height: 1.6;
-        font-size: .75rem;
+        font-size: 0.75rem;
         white-space: pre-wrap;
         word-break: break-word;
       }
@@ -354,20 +353,20 @@
     max-width: var(--md-tool-width);
     gap: 0.25rem 0.375rem;
 
-    &>div:nth-child(3n + 1) {
+    & > div:nth-child(3n + 1) {
       width: 8px;
       height: 2px;
       border-radius: 1px;
       background: var(--sl-color-divider);
     }
 
-    &>div:nth-child(3n + 2),
-    &>div:nth-child(3n + 3) {
+    & > div:nth-child(3n + 2),
+    & > div:nth-child(3n + 3) {
       font-size: 0.75rem;
       line-height: 1.5;
     }
 
-    &>div:nth-child(3n + 3) {
+    & > div:nth-child(3n + 3) {
       padding-left: 0.125rem;
       word-break: break-word;
       color: var(--sl-color-text-secondary);

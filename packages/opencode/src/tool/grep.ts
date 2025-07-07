@@ -9,21 +9,9 @@ export const GrepTool = Tool.define({
   id: "grep",
   description: DESCRIPTION,
   parameters: z.object({
-    pattern: z
-      .string()
-      .describe("The regex pattern to search for in file contents"),
-    path: z
-      .string()
-      .optional()
-      .describe(
-        "The directory to search in. Defaults to the current working directory.",
-      ),
-    include: z
-      .string()
-      .optional()
-      .describe(
-        'File pattern to include in the search (e.g. "*.js", "*.{ts,tsx}")',
-      ),
+    pattern: z.string().describe("The regex pattern to search for in file contents"),
+    path: z.string().optional().describe("The directory to search in. Defaults to the current working directory."),
+    include: z.string().optional().describe('File pattern to include in the search (e.g. "*.js", "*.{ts,tsx}")'),
   }),
   async execute(params) {
     if (!params.pattern) {
@@ -116,9 +104,7 @@ export const GrepTool = Tool.define({
 
     if (truncated) {
       outputLines.push("")
-      outputLines.push(
-        "(Results are truncated. Consider using a more specific path or pattern.)",
-      )
+      outputLines.push("(Results are truncated. Consider using a more specific path or pattern.)")
     }
 
     return {

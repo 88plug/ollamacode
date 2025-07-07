@@ -84,21 +84,12 @@ export const RunCommand = cmd({
       const cfg = await Config.get()
       if (cfg.autoshare || Flag.OPENCODE_AUTO_SHARE || args.share) {
         await Session.share(session.id)
-        UI.println(
-          UI.Style.TEXT_INFO_BOLD +
-            "~  https://opencode.ai/s/" +
-            session.id.slice(-8),
-        )
+        UI.println(UI.Style.TEXT_INFO_BOLD + "~  https://opencode.ai/s/" + session.id.slice(-8))
       }
       UI.empty()
 
-      const { providerID, modelID } = args.model
-        ? Provider.parseModel(args.model)
-        : await Provider.defaultModel()
-      UI.println(
-        UI.Style.TEXT_NORMAL_BOLD + "@ ",
-        UI.Style.TEXT_NORMAL + `${providerID}/${modelID}`,
-      )
+      const { providerID, modelID } = args.model ? Provider.parseModel(args.model) : await Provider.defaultModel()
+      UI.println(UI.Style.TEXT_NORMAL_BOLD + "@ ", UI.Style.TEXT_NORMAL + `${providerID}/${modelID}`)
       UI.empty()
 
       function printEvent(color: string, type: string, title: string) {
@@ -115,10 +106,7 @@ export const RunCommand = cmd({
         const part = evt.properties.part
 
         if (part.type === "tool" && part.state.status === "completed") {
-          const [tool, color] = TOOL[part.tool] ?? [
-            part.tool,
-            UI.Style.TEXT_INFO_BOLD,
-          ]
+          const [tool, color] = TOOL[part.tool] ?? [part.tool, UI.Style.TEXT_INFO_BOLD]
           printEvent(color, tool, part.state.title || "Unknown")
         }
 

@@ -12,29 +12,15 @@ import {
 } from "solid-js"
 import { DateTime } from "luxon"
 import { createStore, reconcile } from "solid-js/store"
-import {
-  IconOpenAI,
-  IconGemini,
-  IconOpencode,
-  IconAnthropic,
-} from "./icons/custom"
-import {
-  IconSparkles,
-  IconArrowDown,
-} from "./icons"
+import { IconOpenAI, IconGemini, IconOpencode, IconAnthropic } from "./icons/custom"
+import { IconSparkles, IconArrowDown } from "./icons"
 import styles from "./share.module.css"
 import type { MessageV2 } from "opencode/session/message-v2"
 import type { Message } from "opencode/session/message"
 import type { Session } from "opencode/session/index"
 import { Part } from "./share/part"
 
-
-type Status =
-  | "disconnected"
-  | "connecting"
-  | "connected"
-  | "error"
-  | "reconnecting"
+type Status = "disconnected" | "connecting" | "connected" | "error" | "reconnecting"
 
 function scrollToAnchor(id: string) {
   const el = document.getElementById(id)
@@ -42,7 +28,6 @@ function scrollToAnchor(id: string) {
 
   el.scrollIntoView({ behavior: "smooth" })
 }
-
 
 function getStatusText(status: [Status, string?]): string {
   switch (status[0]) {
@@ -61,7 +46,6 @@ function getStatusText(status: [Status, string?]): string {
   }
 }
 
-
 function ProviderIcon(props: { provider: string; size?: number }) {
   const size = props.size || 16
   return (
@@ -78,8 +62,6 @@ function ProviderIcon(props: { provider: string; size?: number }) {
     </Switch>
   )
 }
-
-
 
 export default function Share(props: {
   id: string
@@ -105,12 +87,8 @@ export default function Share(props: {
     info?: Session.Info
     messages: Record<string, MessageV2.Info | Message.Info>
   }>({ info: props.info, messages: props.messages })
-  const messages = createMemo(() =>
-    Object.values(store.messages).toSorted((a, b) => a.id?.localeCompare(b.id)),
-  )
-  const [connectionStatus, setConnectionStatus] = createSignal<
-    [Status, string?]
-  >(["disconnected", "Disconnected"])
+  const messages = createMemo(() => Object.values(store.messages).toSorted((a, b) => a.id?.localeCompare(b.id)))
+  const [connectionStatus, setConnectionStatus] = createSignal<[Status, string?]>(["disconnected", "Disconnected"])
 
   onMount(() => {
     const apiUrl = props.api
@@ -185,10 +163,7 @@ export default function Share(props: {
 
         // Try to reconnect after 2 seconds
         clearTimeout(reconnectTimer)
-        reconnectTimer = window.setTimeout(
-          setupWebSocket,
-          2000,
-        ) as unknown as number
+        reconnectTimer = window.setTimeout(setupWebSocket, 2000) as unknown as number
       }
     }
 
@@ -310,10 +285,7 @@ export default function Share(props: {
         result.tokens.output += msg.tokens.output
         result.tokens.reasoning += msg.tokens.reasoning
 
-        result.models[`${msg.providerID} ${msg.modelID}`] = [
-          msg.providerID,
-          msg.modelID,
-        ]
+        result.models[`${msg.providerID} ${msg.modelID}`] = [msg.providerID, msg.modelID]
 
         if (msg.path.root) {
           result.rootDir = msg.path.root
@@ -329,7 +301,7 @@ export default function Share(props: {
   })
 
   return (
-    <main classList={{ [styles.root]: true, "not-content": true }} >
+    <main classList={{ [styles.root]: true, "not-content": true }}>
       <div data-component="header">
         <h1 data-component="header-title">{store.info?.title}</h1>
         <div data-component="header-details">
@@ -362,58 +334,50 @@ export default function Share(props: {
           </ul>
           <div
             data-component="header-time"
-            title={DateTime.fromMillis(data().created || 0).toLocaleString(
-              DateTime.DATETIME_FULL_WITH_SECONDS,
-            )}
+            title={DateTime.fromMillis(data().created || 0).toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)}
           >
-            {DateTime.fromMillis(data().created || 0).toLocaleString(
-              DateTime.DATETIME_MED,
-            )}
+            {DateTime.fromMillis(data().created || 0).toLocaleString(DateTime.DATETIME_MED)}
           </div>
         </div>
       </div>
 
       <div>
-        <Show
-          when={data().messages.length > 0}
-          fallback={<p>Waiting for messages...</p>}
-        >
+        <Show when={data().messages.length > 0} fallback={<p>Waiting for messages...</p>}>
           <div class={styles.parts}>
             <SuspenseList revealOrder="forwards">
               <For each={data().messages}>
                 {(msg, msgIndex) => (
                   <Suspense>
-                    <For each={msg.parts.filter((x, index) => {
-                      if (x.type === "step-start" && index > 0) return false
-                      if (x.type === "tool" && x.tool === "todoread") return false
-                      if (x.type === "text" && !x.text) return false
-                      if (x.type === "tool" && (x.state.status === "pending" || x.state.status === "running")) return false
-                      return true
-                    })}>
+                    <For
+                      each={msg.parts.filter((x, index) => {
+                        if (x.type === "step-start" && index > 0) return false
+                        if (x.type === "tool" && x.tool === "todoread") return false
+                        if (x.type === "text" && !x.text) return false
+                        if (x.type === "tool" && (x.state.status === "pending" || x.state.status === "running"))
+                          return false
+                        return true
+                      })}
+                    >
                       {(part, partIndex) => {
                         const last = createMemo(
-                          () =>
-                            data().messages.length === msgIndex() + 1 &&
-                            msg.parts.length === partIndex() + 1,
+                          () => data().messages.length === msgIndex() + 1 && msg.parts.length === partIndex() + 1,
                         )
 
                         onMount(() => {
                           const hash = window.location.hash.slice(1)
                           // Wait till all parts are loaded
                           if (
-                            hash !== ""
-                            && !hasScrolledToAnchor
-                            && msg.parts.length === partIndex() + 1
-                            && data().messages.length === msgIndex() + 1
+                            hash !== "" &&
+                            !hasScrolledToAnchor &&
+                            msg.parts.length === partIndex() + 1 &&
+                            data().messages.length === msgIndex() + 1
                           ) {
                             hasScrolledToAnchor = true
                             scrollToAnchor(hash)
                           }
                         })
 
-                        return (
-                          <Part last={last()} part={part} index={partIndex()} message={msg} />
-                        )
+                        return <Part last={last()} part={part} index={partIndex()} message={msg} />
                       }}
                     </For>
                   </Suspense>
@@ -438,19 +402,11 @@ export default function Share(props: {
                   </li>
                   <li>
                     <span data-element-label>Input Tokens</span>
-                    {data().tokens.input ? (
-                      <span>{data().tokens.input}</span>
-                    ) : (
-                      <span data-placeholder>&mdash;</span>
-                    )}
+                    {data().tokens.input ? <span>{data().tokens.input}</span> : <span data-placeholder>&mdash;</span>}
                   </li>
                   <li>
                     <span data-element-label>Output Tokens</span>
-                    {data().tokens.output ? (
-                      <span>{data().tokens.output}</span>
-                    ) : (
-                      <span data-placeholder>&mdash;</span>
-                    )}
+                    {data().tokens.output ? <span>{data().tokens.output}</span> : <span data-placeholder>&mdash;</span>}
                   </li>
                   <li>
                     <span data-element-label>Reasoning Tokens</span>
@@ -476,10 +432,7 @@ export default function Share(props: {
               "overflow-y": "auto",
             }}
           >
-            <Show
-              when={data().messages.length > 0}
-              fallback={<p>Waiting for messages...</p>}
-            >
+            <Show when={data().messages.length > 0} fallback={<p>Waiting for messages...</p>}>
               <ul style={{ "list-style-type": "none", padding: 0 }}>
                 <For each={data().messages}>
                   {(msg) => (
@@ -507,9 +460,7 @@ export default function Share(props: {
         <button
           type="button"
           class={styles["scroll-button"]}
-          onClick={() =>
-            document.body.scrollIntoView({ behavior: "smooth", block: "end" })
-          }
+          onClick={() => document.body.scrollIntoView({ behavior: "smooth", block: "end" })}
           onMouseEnter={() => {
             setIsButtonHovered(true)
             if (scrollTimeout) {
@@ -583,8 +534,7 @@ export function fromV1(v1: Message.Info): MessageV2.Info {
                   }
                 }
 
-                const { title, time, ...metadata } =
-                  v1.metadata.tool[part.toolInvocation.toolCallId]
+                const { title, time, ...metadata } = v1.metadata.tool[part.toolInvocation.toolCallId]
                 if (part.toolInvocation.state === "call") {
                   return {
                     status: "running",

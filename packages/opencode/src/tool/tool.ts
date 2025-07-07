@@ -10,10 +10,7 @@ export namespace Tool {
     abort: AbortSignal
     metadata(input: { title?: string; metadata?: M }): void
   }
-  export interface Info<
-    Parameters extends StandardSchemaV1 = StandardSchemaV1,
-    M extends Metadata = Metadata,
-  > {
+  export interface Info<Parameters extends StandardSchemaV1 = StandardSchemaV1, M extends Metadata = Metadata> {
     id: string
     description: string
     parameters: Parameters
@@ -27,10 +24,9 @@ export namespace Tool {
     }>
   }
 
-  export function define<
-    Parameters extends StandardSchemaV1,
-    Result extends Metadata,
-  >(input: Info<Parameters, Result>): Info<Parameters, Result> {
+  export function define<Parameters extends StandardSchemaV1, Result extends Metadata>(
+    input: Info<Parameters, Result>,
+  ): Info<Parameters, Result> {
     return input
   }
 }

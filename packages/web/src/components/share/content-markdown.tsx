@@ -40,11 +40,11 @@ export function ContentMarkdown(props: Props) {
     <div
       class={style.root}
       data-highlight={props.highlight === true ? true : undefined}
-      data-expanded={(expanded() || props.expand === true) ? true : undefined}
+      data-expanded={expanded() || props.expand === true ? true : undefined}
     >
       <div data-slot="markdown" ref={overflow.ref} innerHTML={html()} />
 
-      {(!props.expand && overflow.status) && (
+      {!props.expand && overflow.status && (
         <button
           type="button"
           data-component="text-button"

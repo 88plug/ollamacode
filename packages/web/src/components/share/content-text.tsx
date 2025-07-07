@@ -14,10 +14,12 @@ export function ContentText(props: Props) {
   return (
     <div
       class={style.root}
-      data-expanded={(expanded() || props.expand === true) ? true : undefined}
+      data-expanded={expanded() || props.expand === true ? true : undefined}
       data-compact={props.compact === true ? true : undefined}
     >
-      <pre data-slot="text" ref={overflow.ref}>{props.text}</pre>
+      <pre data-slot="text" ref={overflow.ref}>
+        {props.text}
+      </pre>
       {((!props.expand && overflow.status) || expanded()) && (
         <button
           type="button"

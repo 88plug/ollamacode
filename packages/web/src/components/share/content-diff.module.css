@@ -23,8 +23,6 @@
     grid-template-columns: 1fr 1fr;
     align-items: stretch;
 
-
-
     [data-slot="before"],
     [data-slot="after"] {
       position: relative;
@@ -77,13 +75,11 @@
     }
   }
 
-
-
-  .diff>.row:first-child [data-section="cell"]:first-child {
+  .diff > .row:first-child [data-section="cell"]:first-child {
     padding-top: 0.5rem;
   }
 
-  .diff>.row:last-child [data-section="cell"]:last-child {
+  .diff > .row:last-child [data-section="cell"]:last-child {
     padding-bottom: 0.5rem;
   }
 
@@ -108,7 +104,7 @@
       white-space: pre-wrap;
       word-break: break-word;
 
-      code>span:empty::before {
+      code > span:empty::before {
         content: "\00a0";
         white-space: pre;
         display: inline-block;
@@ -116,7 +112,6 @@
       }
     }
   }
-
 
   @media (max-width: 40rem) {
     [data-slot="desktop"] {

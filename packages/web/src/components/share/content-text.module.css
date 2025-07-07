@@ -35,7 +35,6 @@
     flex: 0 0 auto;
     padding: 2px 0;
     font-size: 0.75rem;
-
   }
 
   &[data-theme="invert"] {

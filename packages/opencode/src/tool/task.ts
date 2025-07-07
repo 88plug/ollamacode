@@ -9,17 +9,12 @@ export const TaskTool = Tool.define({
   id: "task",
   description: DESCRIPTION,
   parameters: z.object({
-    description: z
-      .string()
-      .describe("A short (3-5 words) description of the task"),
+    description: z.string().describe("A short (3-5 words) description of the task"),
     prompt: z.string().describe("The task for the agent to perform"),
   }),
   async execute(params, ctx) {
     const session = await Session.create(ctx.sessionID)
-    const msg = (await Session.getMessage(
-      ctx.sessionID,
-      ctx.messageID,
-    )) as MessageV2.Assistant
+    const msg = (await Session.getMessage(ctx.sessionID, ctx.messageID)) as MessageV2.Assistant
 
     function summary(input: MessageV2.Info) {
       const result = []
