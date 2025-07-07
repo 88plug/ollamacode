@@ -6,10 +6,7 @@ import { Message } from "./message"
 import { convertToModelMessages, type ModelMessage, type UIMessage } from "ai"
 
 export namespace MessageV2 {
-  export const OutputLengthError = NamedError.create(
-    "MessageOutputLengthError",
-    z.object({}),
-  )
+  export const OutputLengthError = NamedError.create("MessageOutputLengthError", z.object({}))
 
   export const ToolStatePending = z
     .object({
@@ -69,12 +66,7 @@ export namespace MessageV2 {
   export type ToolStateError = z.infer<typeof ToolStateError>
 
   export const ToolState = z
-    .discriminatedUnion("status", [
-      ToolStatePending,
-      ToolStateRunning,
-      ToolStateCompleted,
-      ToolStateError,
-    ])
+    .discriminatedUnion("status", [ToolStatePending, ToolStateRunning, ToolStateCompleted, ToolStateError])
     .openapi({
       ref: "ToolState",
     })
@@ -127,11 +119,9 @@ export namespace MessageV2 {
     sessionID: z.string(),
   })
 
-  export const UserPart = z
-    .discriminatedUnion("type", [TextPart, FilePart])
-    .openapi({
-      ref: "UserMessagePart",
-    })
+  export const UserPart = z.discriminatedUnion("type", [TextPart, FilePart]).openapi({
+    ref: "UserMessagePart",
+  })
   export type UserPart = z.infer<typeof UserPart>
 
   export const User = Base.extend({
@@ -145,11 +135,9 @@ export namespace MessageV2 {
   })
   export type User = z.infer<typeof User>
 
-  export const AssistantPart = z
-    .discriminatedUnion("type", [TextPart, ToolPart, StepStartPart])
-    .openapi({
-      ref: "AssistantMessagePart",
-    })
+  export const AssistantPart = z.discriminatedUnion("type", [TextPart, ToolPart, StepStartPart]).openapi({
+    ref: "AssistantMessagePart",
+  })
   export type AssistantPart = z.infer<typeof AssistantPart>
 
   export const Assistant = Base.extend({
@@ -160,11 +148,7 @@ export namespace MessageV2 {
       completed: z.number().optional(),
     }),
     error: z
-      .discriminatedUnion("name", [
-        Provider.AuthError.Schema,
-        NamedError.Unknown.Schema,
-        OutputLengthError.Schema,
-      ])
+      .discriminatedUnion("name", [Provider.AuthError.Schema, NamedError.Unknown.Schema, OutputLengthError.Schema])
       .optional(),
     system: z.string().array(),
     modelID: z.string(),
@@ -265,8 +249,7 @@ export namespace MessageV2 {
                     }
                   }
 
-                  const { title, time, ...metadata } =
-                    v1.metadata.tool[part.toolInvocation.toolCallId]
+                  const { title, time, ...metadata } = v1.metadata.tool[part.toolInvocation.toolCallId] ?? {}
                   if (part.toolInvocation.state === "call") {
                     return {
                       status: "running",
