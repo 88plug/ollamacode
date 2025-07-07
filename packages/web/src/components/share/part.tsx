@@ -8,7 +8,7 @@ import { DateTime } from "luxon"
 import CodeBlock from "../CodeBlock"
 import map from "lang-map"
 import type { Diagnostic } from "vscode-languageserver-types"
-import { BashTool, FallbackTool } from "./tool"
+import { FallbackTool } from "./tool"
 import { ContentCode } from "./content-code"
 import { ContentDiff } from "./content-diff"
 
@@ -88,42 +88,89 @@ export function Part(props: PartProps) {
             <div data-slot="model">{props.message.modelID}</div>
           </div>
         )}
-        {props.part.type === "tool" && props.part.state.status === "completed" && props.message.role === "assistant" && (
-          <div data-component="tool" data-tool={props.part.tool}>
-            <Switch>
-              <Match when={props.part.tool === "grep"}>
-                <GrepTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={props.part.tool === "glob"}>
-                <GlobTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={props.part.tool === "list"}>
-                <ListTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={props.part.tool === "read"}>
-                <ReadTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={props.part.tool === "write"}>
-                <WriteTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={props.part.tool === "edit"}>
-                <EditTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={props.part.tool === "bash"}>
-                <BashTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={props.part.tool === "todowrite"}>
-                <TodoWriteTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={props.part.tool === "webfetch"}>
-                <WebFetchTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-              <Match when={true}>
-                <FallbackTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
-              </Match>
-            </Switch>
-          </div>
-        )}
+        {props.part.type === "tool" &&
+          props.part.state.status === "completed" &&
+          props.message.role === "assistant" && (
+            <div data-component="tool" data-tool={props.part.tool}>
+              <Switch>
+                <Match when={props.part.tool === "grep"}>
+                  <GrepTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
+                </Match>
+                <Match when={props.part.tool === "glob"}>
+                  <GlobTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
+                </Match>
+                <Match when={props.part.tool === "list"}>
+                  <ListTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
+                </Match>
+                <Match when={props.part.tool === "read"}>
+                  <ReadTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
+                </Match>
+                <Match when={props.part.tool === "write"}>
+                  <WriteTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
+                </Match>
+                <Match when={props.part.tool === "edit"}>
+                  <EditTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
+                </Match>
+                <Match when={props.part.tool === "bash"}>
+                  <BashTool
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                    message={props.message}
+                  />
+                </Match>
+                <Match when={props.part.tool === "todowrite"}>
+                  <TodoWriteTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
+                </Match>
+                <Match when={props.part.tool === "webfetch"}>
+                  <WebFetchTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
+                </Match>
+                <Match when={true}>
+                  <FallbackTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                </Match>
+              </Switch>
+            </div>
+          )}
       </div>
     </div>
   )
@@ -435,6 +482,28 @@ export function EditTool(props: ToolProps) {
       <Show when={diagnostics().length > 0}>
         <div data-component="error">{diagnostics()}</div>
       </Show>
+    </>
+  )
+}
+
+export function BashTool(props: ToolProps) {
+  const command = () => props.state.metadata?.title
+  const result = () => props.state.metadata?.stdout
+  const error = () => props.state.metadata?.stderr
+
+  return (
+    <>
+      <div data-component="terminal" data-size="sm">
+        <div data-slot="body">
+          <div data-slot="header">
+            <span>{props.state.metadata.description}</span>
+          </div>
+          <div data-slot="content">
+            <ContentCode flush lang="bash" code={props.state.input.command} />
+            <ContentCode flush lang="console" code={result() || ""} />
+          </div>
+        </div>
+      </div>
     </>
   )
 }

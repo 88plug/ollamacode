@@ -7,6 +7,7 @@
 
   &[data-flush="true"] {
     border: none;
+    background-color: transparent;
     padding: 0
   }
 

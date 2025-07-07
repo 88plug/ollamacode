@@ -324,6 +324,7 @@ export default function Share(props: {
         }
       }
     }
+    console.log(result.messages)
     return result
   })
 

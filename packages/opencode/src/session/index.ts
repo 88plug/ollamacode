@@ -129,9 +129,7 @@ export namespace Session {
       id: Identifier.descending("session"),
       version: Installation.VERSION,
       parentID,
-      title:
-        (parentID ? "Child session - " : "New Session - ") +
-        new Date().toISOString(),
+      title: (parentID ? "Child session - " : "New Session - ") + new Date().toISOString(),
       time: {
         created: Date.now(),
         updated: Date.now(),
@@ -220,9 +218,7 @@ export namespace Session {
   }
 
   export async function getMessage(sessionID: string, messageID: string) {
-    return Storage.readJSON<MessageV2.Info>(
-      "session/message/" + sessionID + "/" + messageID,
-    )
+    return Storage.readJSON<MessageV2.Info>("session/message/" + sessionID + "/" + messageID)
   }
 
   export async function* list() {
@@ -274,10 +270,7 @@ export namespace Session {
   }
 
   async function updateMessage(msg: MessageV2.Info) {
-    await Storage.writeJSON(
-      "session/message/" + msg.sessionID + "/" + msg.id,
-      msg,
-    )
+    await Storage.writeJSON("session/message/" + msg.sessionID + "/" + msg.id, msg)
     Bus.publish(MessageV2.Event.Updated, {
       info: msg,
     })
@@ -301,13 +294,8 @@ export namespace Session {
     if (session.revert) {
       const trimmed = []
       for (const msg of msgs) {
-        if (
-          msg.id > session.revert.messageID ||
-          (msg.id === session.revert.messageID && session.revert.part === 0)
-        ) {
-          await Storage.remove(
-            "session/message/" + input.sessionID + "/" + msg.id,
-          )
+        if (msg.id > session.revert.messageID || (msg.id === session.revert.messageID && session.revert.part === 0)) {
+          await Storage.remove("session/message/" + input.sessionID + "/" + msg.id)
           await Bus.publish(MessageV2.Event.Removed, {
             sessionID: input.sessionID,
             messageID: msg.id,
@@ -332,17 +320,10 @@ export namespace Session {
     // auto summarize if too long
     if (previous) {
       const tokens =
-        previous.tokens.input +
-        previous.tokens.cache.read +
-        previous.tokens.cache.write +
-        previous.tokens.output
+        previous.tokens.input + previous.tokens.cache.read + previous.tokens.cache.write + previous.tokens.output
       if (
         model.info.limit.context &&
-        tokens >
-          Math.max(
-            (model.info.limit.context - (model.info.limit.output ?? 0)) * 0.9,
-            0,
-          )
+        tokens > Math.max((model.info.limit.context - (model.info.limit.output ?? 0)) * 0.9, 0)
       ) {
         await summarize({
           sessionID: input.sessionID,
@@ -353,9 +334,7 @@ export namespace Session {
       }
     }
 
-    const lastSummary = msgs.findLast(
-      (msg) => msg.role === "assistant" && msg.summary === true,
-    )
+    const lastSummary = msgs.findLast((msg) => msg.role === "assistant" && msg.summary === true)
     if (lastSummary) msgs = msgs.filter((msg) => msg.id >= lastSummary.id)
 
     const app = App.info()
@@ -384,12 +363,7 @@ export namespace Session {
                 return [
                   {
                     type: "text",
-                    text: [
-                      "Called the Read tool on " + url.pathname,
-                      "<results>",
-                      text,
-                      "</results>",
-                    ].join("\n"),
+                    text: ["Called the Read tool on " + url.pathname, "<results>", text, "</results>"].join("\n"),
                   },
                 ]
               }
@@ -401,9 +375,7 @@ export namespace Session {
                 },
                 {
                   type: "file",
-                  url:
-                    `data:${part.mime};base64,` +
-                    Buffer.from(await file.bytes()).toString("base64url"),
+                  url: `data:${part.mime};base64,` + Buffer.from(await file.bytes()).toString("base64url"),
                   mime: part.mime,
                   filename: part.filename!,
                 },
@@ -500,8 +472,7 @@ export namespace Session {
             messageID: next.id,
             metadata: async (val) => {
               const match = next.parts.find(
-                (p): p is MessageV2.ToolPart =>
-                  p.type === "tool" && p.id === opts.toolCallId,
+                (p): p is MessageV2.ToolPart => p.type === "tool" && p.id === opts.toolCallId,
               )
               if (match && match.state.status === "running") {
                 match.state.title = val.title
@@ -567,11 +538,7 @@ export namespace Session {
             async transformParams(args) {
               if (args.type === "stream") {
                 // @ts-expect-error
-                args.params.prompt = ProviderTransform.message(
-                  args.params.prompt,
-                  input.providerID,
-                  input.modelID,
-                )
+                args.params.prompt = ProviderTransform.message(args.params.prompt, input.providerID, input.modelID)
               }
               return args.params
             },
@@ -607,10 +574,7 @@ export namespace Session {
           break
 
         case "tool-call": {
-          const match = next.parts.find(
-            (p): p is MessageV2.ToolPart =>
-              p.type === "tool" && p.id === value.toolCallId,
-          )
+          const match = next.parts.find((p): p is MessageV2.ToolPart => p.type === "tool" && p.id === value.toolCallId)
           if (match) {
             match.state = {
               status: "running",
@@ -628,10 +592,7 @@ export namespace Session {
           break
         }
         case "tool-result": {
-          const match = next.parts.find(
-            (p): p is MessageV2.ToolPart =>
-              p.type === "tool" && p.id === value.toolCallId,
-          )
+          const match = next.parts.find((p): p is MessageV2.ToolPart => p.type === "tool" && p.id === value.toolCallId)
           if (match && match.state.status === "running") {
             match.state = {
               status: "completed",
@@ -654,10 +615,7 @@ export namespace Session {
         }
 
         case "tool-error": {
-          const match = next.parts.find(
-            (p): p is MessageV2.ToolPart =>
-              p.type === "tool" && p.id === value.toolCallId,
-          )
+          const match = next.parts.find((p): p is MessageV2.ToolPart => p.type === "tool" && p.id === value.toolCallId)
           if (match && match.state.status === "running") {
             match.state = {
               status: "error",
@@ -696,16 +654,10 @@ export namespace Session {
               ).toObject()
               break
             case e instanceof Error:
-              next.error = new NamedError.Unknown(
-                { message: e.toString() },
-                { cause: e },
-              ).toObject()
+              next.error = new NamedError.Unknown({ message: e.toString() }, { cause: e }).toObject()
               break
             default:
-              next.error = new NamedError.Unknown(
-                { message: JSON.stringify(e) },
-                { cause: e },
-              )
+              next.error = new NamedError.Unknown({ message: JSON.stringify(e) }, { cause: e })
           }
           Bus.publish(Event.Error, {
             error: next.error,
@@ -719,11 +671,7 @@ export namespace Session {
           break
 
         case "finish-step":
-          const usage = getUsage(
-            model.info,
-            value.usage,
-            value.providerMetadata,
-          )
+          const usage = getUsage(model.info, value.usage, value.providerMetadata)
           next.cost += usage.cost
           next.tokens = usage.tokens
           break
@@ -733,10 +681,10 @@ export namespace Session {
             type: "text",
             text: "",
           }
-          next.parts.push(text)
           break
 
         case "text":
+          if (text.text === "") next.parts.push(text)
           text.text += value.text
           break
 
@@ -763,11 +711,7 @@ export namespace Session {
     return next
   }
 
-  export async function revert(_input: {
-    sessionID: string
-    messageID: string
-    part: number
-  }) {
+  export async function revert(_input: { sessionID: string; messageID: string; part: number }) {
     // TODO
     /*
     const message = await getMessage(input.sessionID, input.messageID)
@@ -804,23 +748,16 @@ export namespace Session {
     const session = await get(sessionID)
     if (!session) return
     if (!session.revert) return
-    if (session.revert.snapshot)
-      await Snapshot.restore(sessionID, session.revert.snapshot)
+    if (session.revert.snapshot) await Snapshot.restore(sessionID, session.revert.snapshot)
     update(sessionID, (draft) => {
       draft.revert = undefined
     })
   }
 
-  export async function summarize(input: {
-    sessionID: string
-    providerID: string
-    modelID: string
-  }) {
+  export async function summarize(input: { sessionID: string; providerID: string; modelID: string }) {
     using abort = lock(input.sessionID)
     const msgs = await messages(input.sessionID)
-    const lastSummary = msgs.findLast(
-      (msg) => msg.role === "assistant" && msg.summary === true,
-    )?.id
+    const lastSummary = msgs.findLast((msg) => msg.role === "assistant" && msg.summary === true)?.id
     const filtered = msgs.filter((msg) => !lastSummary || msg.id >= lastSummary)
     const model = await Provider.getModel(input.providerID, input.modelID)
     const app = App.info()
@@ -930,11 +867,7 @@ export namespace Session {
     }
   }
 
-  function getUsage(
-    model: ModelsDev.Model,
-    usage: LanguageModelUsage,
-    metadata?: ProviderMetadata,
-  ) {
+  function getUsage(model: ModelsDev.Model, usage: LanguageModelUsage, metadata?: ProviderMetadata) {
     const tokens = {
       input: usage.inputTokens ?? 0,
       output: usage.outputTokens ?? 0,
@@ -951,16 +884,8 @@ export namespace Session {
       cost: new Decimal(0)
         .add(new Decimal(tokens.input).mul(model.cost.input).div(1_000_000))
         .add(new Decimal(tokens.output).mul(model.cost.output).div(1_000_000))
-        .add(
-          new Decimal(tokens.cache.read)
-            .mul(model.cost.cache_read ?? 0)
-            .div(1_000_000),
-        )
-        .add(
-          new Decimal(tokens.cache.write)
-            .mul(model.cost.cache_write ?? 0)
-            .div(1_000_000),
-        )
+        .add(new Decimal(tokens.cache.read).mul(model.cost.cache_read ?? 0).div(1_000_000))
+        .add(new Decimal(tokens.cache.write).mul(model.cost.cache_write ?? 0).div(1_000_000))
         .toNumber(),
       tokens,
     }
@@ -972,11 +897,7 @@ export namespace Session {
     }
   }
 
-  export async function initialize(input: {
-    sessionID: string
-    modelID: string
-    providerID: string
-  }) {
+  export async function initialize(input: { sessionID: string; modelID: string; providerID: string }) {
     const app = App.info()
     await Session.chat({
       sessionID: input.sessionID,
