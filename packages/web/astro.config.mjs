@@ -34,7 +34,10 @@ export default defineConfig({
     starlight({
       title: "opencode",
       expressiveCode: { themes: ["github-light", "github-dark"] },
-      social: [{ icon: "github", label: "GitHub", href: config.github }],
+      social: [
+        { icon: "github", label: "GitHub", href: config.github },
+        { icon: "discord", label: "Dscord", href: config.discord }
+      ],
       head: [
         {
           tag: "link",
