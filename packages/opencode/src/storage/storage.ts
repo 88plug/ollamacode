@@ -10,10 +10,7 @@ export namespace Storage {
   const log = Log.create({ service: "storage" })
 
   export const Event = {
-    Write: Bus.event(
-      "storage.write",
-      z.object({ key: z.string(), content: z.any() }),
-    ),
+    Write: Bus.event("storage.write", z.object({ key: z.string(), content: z.any() })),
   }
 
   type Migration = (dir: string) => Promise<void>
@@ -28,8 +25,12 @@ export namespace Storage {
         const content = await Bun.file(file).json()
         if (!content.metadata) continue
         log.info("migrating to v2 message", { file })
-        const result = MessageV2.fromV1(content)
-        await Bun.write(file, JSON.stringify(result, null, 2))
+        try {
+          const result = MessageV2.fromV1(content)
+          await Bun.write(file, JSON.stringify(result, null, 2))
+        } catch (e) {
+          await fs.rename(file, file.replace("storage", "broken"))
+        }
       }
     },
   ]
