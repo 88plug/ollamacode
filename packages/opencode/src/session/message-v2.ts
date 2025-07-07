@@ -255,7 +255,7 @@ export namespace MessageV2 {
                       status: "running",
                       input: part.toolInvocation.args,
                       time: {
-                        start: time.start,
+                        start: time?.start,
                       },
                     }
                   }
