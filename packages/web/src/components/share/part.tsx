@@ -1,5 +1,23 @@
 import { createMemo, createSignal, For, Match, Show, Switch, type JSX, type ParentProps } from "solid-js"
-import { IconCheckCircle, IconChevronDown, IconChevronRight, IconHashtag, IconSparkles } from "../icons"
+import {
+  IconCheckCircle,
+  IconChevronDown,
+  IconChevronRight,
+  IconHashtag,
+  IconSparkles,
+  IconGlobeAlt,
+  IconDocument,
+  IconQueueList,
+  IconUserCircle,
+  IconCommandLine,
+  IconDocumentPlus,
+  IconPencilSquare,
+  IconRectangleStack,
+  IconMagnifyingGlass,
+  IconWrenchScrewdriver,
+  IconDocumentMagnifyingGlass,
+  IconArrowDown,
+} from "../icons"
 import styles from "./part.module.css"
 import type { MessageV2 } from "opencode/session/message-v2"
 import { ContentText } from "./content-text"
@@ -50,6 +68,39 @@ export function Part(props: PartProps) {
             }}
           >
             <Switch>
+              <Match when={props.part.type === "tool" && props.part.tool === "todowrite"}>
+                <IconQueueList width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "todoread"}>
+                <IconQueueList width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "bash"}>
+                <IconCommandLine width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "edit"}>
+                <IconPencilSquare width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "write"}>
+                <IconDocumentPlus width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "read"}>
+                <IconDocument width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "grep"}>
+                <IconDocumentMagnifyingGlass width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "list"}>
+                <IconRectangleStack width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "glob"}>
+                <IconMagnifyingGlass width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "webfetch"}>
+                <IconGlobeAlt width={18} height={18} />
+              </Match>
+              <Match when={props.part.type === "tool" && props.part.tool === "task"}>
+                <IconRectangleStack width={18} height={18} />
+              </Match>
               <Match when={true}>
                 <IconSparkles width={18} height={18} />
               </Match>
@@ -305,19 +356,18 @@ export function TodoWriteTool(props: ToolProps) {
 }
 
 export function GrepTool(props: ToolProps) {
-  const count = () => props.state.metadata?.matches
-  const pattern = () => props.state.input.pattern
-
   return (
     <>
       <div data-component="tool-title">
         <span data-slot="name">Grep</span>
-        <span data-slot="target">&ldquo;{pattern()}&rdquo;</span>
+        <span data-slot="target">&ldquo;{props.state.input.pattern}&rdquo;</span>
       </div>
       <div data-component="tool-result">
         <Switch>
-          <Match when={count() && count() > 0}>
-            <ResultsButton showCopy={count() === 1 ? "1 match" : `${count()} matches`}>
+          <Match when={props.state.metadata?.matches && props.state.metadata?.matches > 0}>
+            <ResultsButton
+              showCopy={props.state.metadata?.matches === 1 ? "1 match" : `${props.state.metadata?.matches} matches`}
+            >
               <ContentText expand compact text={props.state.output} />
             </ResultsButton>
           </Match>
@@ -359,24 +409,20 @@ export function ListTool(props: ToolProps) {
 }
 
 export function WebFetchTool(props: ToolProps) {
-  const url = () => props.state.input.url
-  const format = () => props.state.input.format
-  const hasError = () => props.state.metadata?.error
-
   return (
     <>
       <div data-component="tool-title">
         <span data-slot="name">Fetch</span>
-        <span data-slot="target">{url()}</span>
+        <span data-slot="target">{props.state.input.url}</span>
       </div>
       <div data-component="tool-result">
         <Switch>
-          <Match when={hasError()}>
+          <Match when={props.state.metadata?.error}>
             <div data-component="error">{formatErrorString(props.state.output)}</div>
           </Match>
           <Match when={props.state.output}>
             <ResultsButton>
-              <CodeBlock lang={format() || "text"} code={props.state.output} />
+              <CodeBlock lang={props.state.input.format || "text"} code={props.state.output} />
             </ResultsButton>
           </Match>
         </Switch>
@@ -387,8 +433,6 @@ export function WebFetchTool(props: ToolProps) {
 
 export function ReadTool(props: ToolProps) {
   const filePath = createMemo(() => stripWorkingDirectory(props.state.input?.filePath, props.message.path.cwd))
-  const hasError = () => props.state.metadata?.error
-  const preview = () => props.state.metadata?.preview
 
   return (
     <>
@@ -400,15 +444,15 @@ export function ReadTool(props: ToolProps) {
       </div>
       <div data-component="tool-result">
         <Switch>
-          <Match when={hasError()}>
+          <Match when={props.state.metadata?.error}>
             <div data-component="error">{formatErrorString(props.state.output)}</div>
           </Match>
-          <Match when={typeof preview() === "string"}>
+          <Match when={typeof props.state.metadata?.preview === "string"}>
             <ResultsButton showCopy="Show preview" hideCopy="Hide preview">
-              <ContentCode lang={getShikiLang(filePath() || "")} code={preview()} />
+              <ContentCode lang={getShikiLang(filePath() || "")} code={props.state.metadata?.preview} />
             </ResultsButton>
           </Match>
-          <Match when={typeof preview() !== "string" && props.state.output}>
+          <Match when={typeof props.state.metadata?.preview !== "string" && props.state.output}>
             <ResultsButton>
               <ContentText expand compact text={props.state.output} />
             </ResultsButton>
@@ -421,8 +465,6 @@ export function ReadTool(props: ToolProps) {
 
 export function WriteTool(props: ToolProps) {
   const filePath = createMemo(() => stripWorkingDirectory(props.state.input?.filePath, props.message.path.cwd))
-  const hasError = () => props.state.metadata?.error
-  const content = () => props.state.input?.content
   const diagnostics = createMemo(() => getDiagnostics(props.state.metadata?.diagnostics, props.state.input.filePath))
 
   return (
@@ -438,10 +480,10 @@ export function WriteTool(props: ToolProps) {
       </Show>
       <div data-component="tool-result">
         <Switch>
-          <Match when={hasError()}>
+          <Match when={props.state.metadata?.error}>
             <div data-component="error">{formatErrorString(props.state.output)}</div>
           </Match>
-          <Match when={content()}>
+          <Match when={props.state.input?.content}>
             <ResultsButton showCopy="Show contents" hideCopy="Hide contents">
               <ContentCode lang={getShikiLang(filePath() || "")} code={props.state.input?.content} />
             </ResultsButton>
@@ -453,9 +495,6 @@ export function WriteTool(props: ToolProps) {
 }
 
 export function EditTool(props: ToolProps) {
-  const diff = () => props.state.metadata?.diff
-  const message = () => props.state.metadata?.message
-  const hasError = () => props.state.metadata?.error
   const filePath = createMemo(() => stripWorkingDirectory(props.state.input.filePath, props.message.path.cwd))
   const diagnostics = createMemo(() => getDiagnostics(props.state.metadata?.diagnostics, props.state.input.filePath))
 
@@ -469,12 +508,12 @@ export function EditTool(props: ToolProps) {
       </div>
       <div data-component="tool-result">
         <Switch>
-          <Match when={hasError()}>
-            <div data-component="error">{formatErrorString(message() || "")}</div>
+          <Match when={props.state.metadata?.error}>
+            <div data-component="error">{formatErrorString(props.state.metadata?.message || "")}</div>
           </Match>
-          <Match when={diff()}>
+          <Match when={props.state.metadata?.diff}>
             <div data-component="diff">
-              <ContentDiff diff={diff()} lang={getShikiLang(filePath() || "")} />
+              <ContentDiff diff={props.state.metadata?.diff} lang={getShikiLang(filePath() || "")} />
             </div>
           </Match>
         </Switch>
@@ -487,10 +526,6 @@ export function EditTool(props: ToolProps) {
 }
 
 export function BashTool(props: ToolProps) {
-  const command = () => props.state.metadata?.title
-  const result = () => props.state.metadata?.stdout
-  const error = () => props.state.metadata?.stderr
-
   return (
     <>
       <div data-component="terminal" data-size="sm">
@@ -500,7 +535,7 @@ export function BashTool(props: ToolProps) {
           </div>
           <div data-slot="content">
             <ContentCode flush lang="bash" code={props.state.input.command} />
-            <ContentCode flush lang="console" code={result() || ""} />
+            <ContentCode flush lang="console" code={props.state.metadata?.stdout || ""} />
           </div>
         </div>
       </div>
@@ -509,19 +544,18 @@ export function BashTool(props: ToolProps) {
 }
 
 export function GlobTool(props: ToolProps) {
-  const count = () => props.state.metadata?.count
-  const pattern = () => props.state.input.pattern
-
   return (
     <>
       <div data-component="tool-title">
         <span data-slot="name">Glob</span>
-        <span data-slot="target">&ldquo;{pattern()}&rdquo;</span>
+        <span data-slot="target">&ldquo;{props.state.input.pattern}&rdquo;</span>
       </div>
       <Switch>
-        <Match when={count() && count() > 0}>
+        <Match when={props.state.metadata?.count && props.state.metadata?.count > 0}>
           <div data-component="tool-result">
-            <ResultsButton showCopy={count() === 1 ? "1 result" : `${count()} results`}>
+            <ResultsButton
+              showCopy={props.state.metadata?.count === 1 ? "1 result" : `${props.state.metadata?.count} results`}
+            >
               <ContentText expand compact text={props.state.output} />
             </ResultsButton>
           </div>
