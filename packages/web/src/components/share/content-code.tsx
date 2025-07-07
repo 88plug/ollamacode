@@ -1,17 +1,15 @@
 import { type JSX, splitProps, createResource } from "solid-js"
 import { codeToHtml } from "shiki"
-import styles from "./codeblock.module.css"
+import style from "./content-code.module.css"
 import { transformerNotationDiff } from "@shikijs/transformers"
 
-interface CodeBlockProps extends JSX.HTMLAttributes<HTMLDivElement> {
+interface Props {
   code: string
   lang?: string
 }
-function CodeBlock(props: CodeBlockProps) {
-  const [local, rest] = splitProps(props, ["code", "lang"])
-
+export function ContentCode(props: Props) {
   const [html] = createResource(
-    () => [local.code, local.lang],
+    () => [props.code, props.lang],
     async ([code, lang]) => {
       // TODO: For testing delays
       // await new Promise((resolve) => setTimeout(resolve, 3000))
@@ -25,8 +23,6 @@ function CodeBlock(props: CodeBlockProps) {
       })) as string
     },
   )
-
-  return <div innerHTML={html()} class={styles.codeblock} {...rest}></div>
+  return <div innerHTML={html()} class={style.root} />
 }
 
-export default CodeBlock

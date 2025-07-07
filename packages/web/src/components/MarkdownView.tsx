@@ -5,7 +5,7 @@ import { codeToHtml } from "shiki"
 import { transformerNotationDiff } from "@shikijs/transformers"
 import styles from "./markdownview.module.css"
 
-interface MarkdownViewProps extends JSX.HTMLAttributes<HTMLDivElement> {
+interface MarkdownViewProps {
   markdown: string
 }
 
@@ -24,7 +24,7 @@ const markedWithShiki = marked.use(
   }),
 )
 
-function MarkdownView(props: MarkdownViewProps) {
+export function MarkdownView(props: MarkdownViewProps) {
   const [local, rest] = splitProps(props, ["markdown"])
   const [html] = createResource(
     () => local.markdown,
@@ -33,7 +33,6 @@ function MarkdownView(props: MarkdownViewProps) {
     },
   )
 
-  return <div innerHTML={html()} class={styles["markdown-body"]} {...rest} />
+  return <div innerHTML={html()} class={styles.root} {...rest} />
 }
 
-export default MarkdownView

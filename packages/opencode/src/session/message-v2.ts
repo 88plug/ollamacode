@@ -34,11 +34,12 @@ export namespace MessageV2 {
     .openapi({
       ref: "ToolStateRunning",
     })
+  export type ToolStateRunning = z.infer<typeof ToolStateRunning>
 
   export const ToolStateCompleted = z
     .object({
       status: z.literal("completed"),
-      input: z.any(),
+      input: z.record(z.any()),
       output: z.string(),
       title: z.string(),
       metadata: z.record(z.any()),
@@ -50,11 +51,12 @@ export namespace MessageV2 {
     .openapi({
       ref: "ToolStateCompleted",
     })
+  export type ToolStateCompleted = z.infer<typeof ToolStateCompleted>
 
   export const ToolStateError = z
     .object({
       status: z.literal("error"),
-      input: z.any(),
+      input: z.record(z.any()),
       error: z.string(),
       time: z.object({
         start: z.number(),
@@ -64,6 +66,7 @@ export namespace MessageV2 {
     .openapi({
       ref: "ToolStateError",
     })
+  export type ToolStateError = z.infer<typeof ToolStateError>
 
   export const ToolState = z
     .discriminatedUnion("status", [

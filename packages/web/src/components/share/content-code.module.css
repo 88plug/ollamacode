@@ -1,0 +1,16 @@
+.root {
+  max-width: var(--md-tool-width);
+  border: 1px solid var(--sl-color-divider);
+  background-color: var(--sl-color-bg-surface);
+  border-radius: .25rem;
+  padding: .5rem calc(.5rem + 3px);
+
+  pre {
+    --shiki-dark-bg: var(--sl-color-bg-surface) !important;
+    background-color: var(--sl-color-bg-surface) !important;
+
+    span {
+      white-space: break-spaces;
+    }
+  }
+}
