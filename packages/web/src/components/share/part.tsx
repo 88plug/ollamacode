@@ -8,15 +8,12 @@ import {
   IconGlobeAlt,
   IconDocument,
   IconQueueList,
-  IconUserCircle,
   IconCommandLine,
   IconDocumentPlus,
   IconPencilSquare,
   IconRectangleStack,
   IconMagnifyingGlass,
-  IconWrenchScrewdriver,
   IconDocumentMagnifyingGlass,
-  IconArrowDown,
 } from "../icons"
 import styles from "./part.module.css"
 import type { MessageV2 } from "opencode/session/message-v2"
@@ -26,7 +23,7 @@ import { DateTime } from "luxon"
 import CodeBlock from "../CodeBlock"
 import map from "lang-map"
 import type { Diagnostic } from "vscode-languageserver-types"
-import { FallbackTool } from "./tool"
+
 import { ContentCode } from "./content-code"
 import { ContentDiff } from "./content-diff"
 
@@ -217,7 +214,12 @@ export function Part(props: PartProps) {
                   />
                 </Match>
                 <Match when={true}>
-                  <FallbackTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                  <FallbackTool
+                    message={props.message}
+                    id={props.part.id}
+                    tool={props.part.tool}
+                    state={props.part.state}
+                  />
                 </Match>
               </Switch>
             </div>
@@ -600,4 +602,63 @@ function Footer(props: ParentProps<{ title: string }>) {
       {props.children}
     </div>
   )
+}
+
+export function FallbackTool(props: ToolProps) {
+  return (
+    <>
+      <div data-component="tool-title">
+        <span data-slot="name">{props.tool}</span>
+      </div>
+      <div data-component="tool-args">
+        <For each={flattenToolArgs(props.state.input)}>
+          {(arg) => (
+            <>
+              <div></div>
+              <div>{arg[0]}</div>
+              <div>{arg[1]}</div>
+            </>
+          )}
+        </For>
+      </div>
+      <Switch>
+        <Match when={props.state.output}>
+          <div data-component="tool-result">
+            <ResultsButton>
+              <ContentText expand compact text={props.state.output} data-size="sm" data-color="dimmed" />
+            </ResultsButton>
+          </div>
+        </Match>
+      </Switch>
+    </>
+  )
+}
+
+// Converts nested objects/arrays into [path, value] pairs.
+// E.g. {a:{b:{c:1}}, d:[{e:2}, 3]} => [["a.b.c",1], ["d[0].e",2], ["d[1]",3]]
+function flattenToolArgs(obj: any, prefix: string = ""): Array<[string, any]> {
+  const entries: Array<[string, any]> = []
+
+  for (const [key, value] of Object.entries(obj)) {
+    const path = prefix ? `${prefix}.${key}` : key
+
+    if (value !== null && typeof value === "object") {
+      if (Array.isArray(value)) {
+        value.forEach((item, index) => {
+          const arrayPath = `${path}[${index}]`
+          if (item !== null && typeof item === "object") {
+            entries.push(...flattenToolArgs(item, arrayPath))
+          } else {
+            entries.push([arrayPath, item])
+          }
+        })
+      } else {
+        entries.push(...flattenToolArgs(value, path))
+      }
+    } else {
+      entries.push([path, value])
+    }
+  }
+
+  return entries
 }
