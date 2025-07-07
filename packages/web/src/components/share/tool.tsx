@@ -1,10 +1,7 @@
 import type { MessageV2 } from "opencode/session/message-v2"
-import { Show, For, Switch, Match, createSignal, createMemo, type JSX } from "solid-js"
-import type { Diagnostic } from "vscode-languageserver-types"
-import map from "lang-map"
+import { Show, For, Switch, Match, createSignal, type JSX } from "solid-js"
 
 import CodeBlock from "../CodeBlock"
-import DiffView from "../DiffView"
 import styles from "../share.module.css"
 
 type ToolProps = {
@@ -15,15 +12,6 @@ type ToolProps = {
   isLastPart?: boolean
 }
 
-interface TextPartProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  text: string
-  expand?: boolean
-}
-
-interface ErrorPartProps extends JSX.HTMLAttributes<HTMLDivElement> {
-  expand?: boolean
-}
-
 interface TerminalPartProps extends JSX.HTMLAttributes<HTMLDivElement> {
   command: string
   error?: string
@@ -32,80 +20,6 @@ interface TerminalPartProps extends JSX.HTMLAttributes<HTMLDivElement> {
   expand?: boolean
 }
 
-function stripWorkingDirectory(filePath?: string, workingDir?: string) {
-  if (filePath === undefined || workingDir === undefined) return filePath
-
-  const prefix = workingDir.endsWith("/") ? workingDir : workingDir + "/"
-
-  if (filePath === workingDir) {
-    return ""
-  }
-
-  if (filePath.startsWith(prefix)) {
-    return filePath.slice(prefix.length)
-  }
-
-  return filePath
-}
-
-function getShikiLang(filename: string) {
-  const ext = filename.split(".").pop()?.toLowerCase() ?? ""
-  const langs = map.languages(ext)
-  const type = langs?.[0]?.toLowerCase()
-
-  const overrides: Record<string, string> = {
-    conf: "shellscript",
-  }
-
-  return type ? (overrides[type] ?? type) : "plaintext"
-}
-
-function formatErrorString(error: string): JSX.Element {
-  const errorMarker = "Error: "
-  const startsWithError = error.startsWith(errorMarker)
-
-  return startsWithError ? (
-    <pre>
-      <span data-color="red" data-marker="label" data-separator>
-        Error
-      </span>
-      <span>{error.slice(errorMarker.length)}</span>
-    </pre>
-  ) : (
-    <pre>
-      <span data-color="dimmed">{error}</span>
-    </pre>
-  )
-}
-
-function getDiagnostics(diagnosticsByFile: Record<string, Diagnostic[]>, currentFile: string): JSX.Element[] {
-  const result: JSX.Element[] = []
-
-  if (diagnosticsByFile === undefined || diagnosticsByFile[currentFile] === undefined) return result
-
-  for (const diags of Object.values(diagnosticsByFile)) {
-    for (const d of diags) {
-      if (d.severity !== 1) continue
-
-      const line = d.range.start.line + 1
-      const column = d.range.start.character + 1
-
-      result.push(
-        <pre>
-          <span data-color="red" data-marker="label">
-            Error
-          </span>
-          <span data-color="dimmed" data-separator>
-            [{line}:{column}]
-          </span>
-          <span>{d.message}</span>
-        </pre>,
-      )
-    }
-  }
-
-  return result
-}
 
 interface ResultsButtonProps extends JSX.HTMLAttributes<HTMLButtonElement> {
   showCopy?: string
@@ -120,18 +34,14 @@ function ResultsButton(props: ResultsButtonProps) {
   )
 }
 
+interface TextPartProps extends JSX.HTMLAttributes<HTMLDivElement> {
+  text: string
+  expand?: boolean
+}
 function TextPart(props: TextPartProps) {
   return (
     <div class={styles["message-text"]} data-expanded={props.expand === true} {...props}>
       <pre>{props.text}</pre>
-    </div>
-  )
-}
-
-function ErrorPart(props: ErrorPartProps) {
-  return (
-    <div class={styles["message-error"]} data-expanded={props.expand === true} {...props}>
-      <div data-section="content">{props.children}</div>
     </div>
   )
 }
@@ -156,41 +66,6 @@ function TerminalPart(props: TerminalPartProps) {
         </div>
       </div>
     </div>
-  )
-}
-
-export function GlobTool(props: ToolProps) {
-  const [showResults, setShowResults] = createSignal(false)
-
-  const count = () => props.state.metadata?.count
-  const pattern = () => props.state.input.pattern
-
-  return (
-    <>
-      <div data-part-title>
-        <span data-element-label>Glob</span>
-        <b>&ldquo;{pattern()}&rdquo;</b>
-      </div>
-      <Switch>
-        <Match when={count() && count() > 0}>
-          <div data-part-tool-result>
-            <ResultsButton
-              showCopy={count() === 1 ? "1 result" : `${count()} results`}
-              results={showResults()}
-              onClick={() => setShowResults((e) => !e)}
-            />
-            <Show when={showResults()}>
-              <TextPart expand text={props.state.output} data-size="sm" data-color="dimmed" />
-            </Show>
-          </div>
-        </Match>
-        <Match when={props.state.output}>
-          <div data-part-tool-result>
-            <TextPart expand text={props.state.output} data-size="sm" data-color="dimmed" />
-          </div>
-        </Match>
-      </Switch>
-    </>
   )
 }
 

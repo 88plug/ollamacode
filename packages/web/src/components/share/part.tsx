@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, For, Match, Show, Switch, type JSX, type ParentProps } from "solid-js"
+import { createMemo, createSignal, For, Match, Show, Switch, type JSX, type ParentProps } from "solid-js"
 import { IconCheckCircle, IconChevronDown, IconChevronRight, IconHashtag, IconSparkles } from "../icons"
 import styles from "./part.module.css"
 import type { MessageV2 } from "opencode/session/message-v2"
@@ -6,11 +6,11 @@ import { ContentText } from "./content-text"
 import { ContentMarkdown } from "./content-markdown"
 import { DateTime } from "luxon"
 import CodeBlock from "../CodeBlock"
-import DiffView from "../DiffView"
 import map from "lang-map"
 import type { Diagnostic } from "vscode-languageserver-types"
 import { BashTool, FallbackTool } from "./tool"
 import { ContentCode } from "./content-code"
+import { ContentDiff } from "./content-diff"
 
 export interface PartProps {
   index: number
@@ -88,35 +88,35 @@ export function Part(props: PartProps) {
             <div data-slot="model">{props.message.modelID}</div>
           </div>
         )}
-        {props.part.type === "tool" && props.part.state.status === "completed" && (
+        {props.part.type === "tool" && props.part.state.status === "completed" && props.message.role === "assistant" && (
           <div data-component="tool" data-tool={props.part.tool}>
             <Switch>
               <Match when={props.part.tool === "grep"}>
-                <GrepTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                <GrepTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={props.part.tool === "glob"}>
-                <GlobTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                <GlobTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={props.part.tool === "list"}>
-                <ListTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                <ListTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={props.part.tool === "read"}>
-                <ReadTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                <ReadTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={props.part.tool === "write"}>
-                <WriteTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                <WriteTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={props.part.tool === "edit"}>
-                <EditTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                <EditTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={props.part.tool === "bash"}>
                 <BashTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={props.part.tool === "todowrite"}>
-                <TodoWriteTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                <TodoWriteTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={props.part.tool === "webfetch"}>
-                <WebFetchTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
+                <WebFetchTool message={props.message} id={props.part.id} tool={props.part.tool} state={props.part.state} />
               </Match>
               <Match when={true}>
                 <FallbackTool id={props.part.id} tool={props.part.tool} state={props.part.state} />
@@ -133,7 +133,7 @@ type ToolProps = {
   id: MessageV2.ToolPart["id"]
   tool: MessageV2.ToolPart["tool"]
   state: MessageV2.ToolStateCompleted
-  rootDir?: string
+  message: MessageV2.Assistant
   isLastPart?: boolean
 }
 
@@ -285,8 +285,8 @@ export function GrepTool(props: ToolProps) {
 
 export function ListTool(props: ToolProps) {
   const path = createMemo(() =>
-    props.state.input?.path !== props.rootDir
-      ? stripWorkingDirectory(props.state.input?.path, props.rootDir)
+    props.state.input?.path !== props.message.path.cwd
+      ? stripWorkingDirectory(props.state.input?.path, props.message.path.cwd)
       : props.state.input?.path,
   )
 
@@ -329,9 +329,7 @@ export function WebFetchTool(props: ToolProps) {
           </Match>
           <Match when={props.state.output}>
             <ResultsButton>
-              <div data-component="code">
-                <CodeBlock lang={format() || "text"} code={props.state.output} />
-              </div>
+              <CodeBlock lang={format() || "text"} code={props.state.output} />
             </ResultsButton>
           </Match>
         </Switch>
@@ -341,7 +339,7 @@ export function WebFetchTool(props: ToolProps) {
 }
 
 export function ReadTool(props: ToolProps) {
-  const filePath = createMemo(() => stripWorkingDirectory(props.state.input?.filePath, props.rootDir))
+  const filePath = createMemo(() => stripWorkingDirectory(props.state.input?.filePath, props.message.path.cwd))
   const hasError = () => props.state.metadata?.error
   const preview = () => props.state.metadata?.preview
 
@@ -360,9 +358,7 @@ export function ReadTool(props: ToolProps) {
           </Match>
           <Match when={typeof preview() === "string"}>
             <ResultsButton showCopy="Show preview" hideCopy="Hide preview">
-              <div data-component="code">
-                <CodeBlock lang={getShikiLang(filePath() || "")} code={preview()} />
-              </div>
+              <ContentCode lang={getShikiLang(filePath() || "")} code={preview()} />
             </ResultsButton>
           </Match>
           <Match when={typeof preview() !== "string" && props.state.output}>
@@ -377,7 +373,7 @@ export function ReadTool(props: ToolProps) {
 }
 
 export function WriteTool(props: ToolProps) {
-  const filePath = createMemo(() => stripWorkingDirectory(props.state.input?.filePath, props.rootDir))
+  const filePath = createMemo(() => stripWorkingDirectory(props.state.input?.filePath, props.message.path.cwd))
   const hasError = () => props.state.metadata?.error
   const content = () => props.state.input?.content
   const diagnostics = createMemo(() => getDiagnostics(props.state.metadata?.diagnostics, props.state.input.filePath))
@@ -413,7 +409,7 @@ export function EditTool(props: ToolProps) {
   const diff = () => props.state.metadata?.diff
   const message = () => props.state.metadata?.message
   const hasError = () => props.state.metadata?.error
-  const filePath = createMemo(() => stripWorkingDirectory(props.state.input.filePath, props.rootDir))
+  const filePath = createMemo(() => stripWorkingDirectory(props.state.input.filePath, props.message.path.cwd))
   const diagnostics = createMemo(() => getDiagnostics(props.state.metadata?.diagnostics, props.state.input.filePath))
 
   return (
@@ -431,7 +427,7 @@ export function EditTool(props: ToolProps) {
           </Match>
           <Match when={diff()}>
             <div data-component="diff">
-              <DiffView class={styles.root} diff={diff()} lang={getShikiLang(filePath() || "")} />
+              <ContentDiff diff={diff()} lang={getShikiLang(filePath() || "")} />
             </div>
           </Match>
         </Switch>

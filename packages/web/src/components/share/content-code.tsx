@@ -1,4 +1,4 @@
-import { type JSX, splitProps, createResource } from "solid-js"
+import { type JSX, splitProps, createResource, Suspense } from "solid-js"
 import { codeToHtml } from "shiki"
 import style from "./content-code.module.css"
 import { transformerNotationDiff } from "@shikijs/transformers"
@@ -6,6 +6,7 @@ import { transformerNotationDiff } from "@shikijs/transformers"
 interface Props {
   code: string
   lang?: string
+  flush?: boolean
 }
 export function ContentCode(props: Props) {
   const [html] = createResource(
@@ -23,6 +24,10 @@ export function ContentCode(props: Props) {
       })) as string
     },
   )
-  return <div innerHTML={html()} class={style.root} />
+  return (
+    <Suspense>
+      <div innerHTML={html()} class={style.root} data-flush={props.flush === true ? true : undefined} />
+    </Suspense>
+  )
 }
 
