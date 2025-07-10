@@ -18,6 +18,7 @@ import { DebugCommand } from "./cli/cmd/debug"
 const cancel = new AbortController()
 
 process.on("unhandledRejection", (e) => {
+  console.error(e)
   Log.Default.error("rejection", {
     e: e instanceof Error ? e.message : e,
   })
