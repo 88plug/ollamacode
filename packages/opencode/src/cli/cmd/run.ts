@@ -85,6 +85,8 @@ export const RunCommand = cmd({
       }
 
       UI.empty()
+      UI.println(UI.logo())
+      UI.empty()
 
       const cfg = await Config.get()
       if (cfg.autoshare || Flag.OPENCODE_AUTO_SHARE || args.share) {
@@ -122,7 +124,7 @@ export const RunCommand = cmd({
 
           if (part.time?.end) {
             UI.empty()
-            UI.println(text)
+            UI.println(UI.markdown(text))
             UI.empty()
             text = ""
             return
@@ -171,7 +173,7 @@ export const RunCommand = cmd({
       const isPiped = !process.stdout.isTTY
       if (isPiped) {
         const match = result.parts.findLast((x) => x.type === "text")
-        if (match) process.stdout.write(match.text)
+        if (match) process.stdout.write(UI.markdown(match.text))
         if (errorMsg) process.stdout.write(errorMsg)
       }
       UI.empty()
