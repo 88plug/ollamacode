@@ -463,7 +463,7 @@ func (a *App) SendChatMessage(
 		SessionID: a.Session.ID,
 		Role:      opencode.UserMessageRoleUser,
 		Time: opencode.UserMessageTime{
-			Created: float64(time.Now().Unix()),
+			Created: float64(time.Now().UnixMilli()),
 		},
 	}
 
