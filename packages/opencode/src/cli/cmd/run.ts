@@ -84,13 +84,6 @@ export const RunCommand = cmd({
         return
       }
 
-      const isPiped = !process.stdout.isTTY
-
-      UI.empty()
-      UI.println(UI.logo())
-      UI.empty()
-      const displayMessage = message.length > 300 ? message.slice(0, 300) + "..." : message
-      UI.println(UI.Style.TEXT_NORMAL_BOLD + "> ", displayMessage)
       UI.empty()
 
       const cfg = await Config.get()
@@ -113,8 +106,10 @@ export const RunCommand = cmd({
         )
       }
 
+      let text = ""
       Bus.subscribe(MessageV2.Event.PartUpdated, async (evt) => {
         if (evt.properties.part.sessionID !== session.id) return
+        if (evt.properties.part.messageID === messageID) return
         const part = evt.properties.part
 
         if (part.type === "tool" && part.state.status === "completed") {
@@ -122,14 +117,16 @@ export const RunCommand = cmd({
           printEvent(color, tool, part.state.title || "Unknown")
         }
 
-        if (part.type === "text" && part.time?.end) {
-          if (part.text.includes("\n")) {
+        if (part.type === "text") {
+          text = part.text
+
+          if (part.time?.end) {
             UI.empty()
-            UI.println(part.text)
+            UI.println(text)
             UI.empty()
+            text = ""
             return
           }
-          printEvent(UI.Style.TEXT_NORMAL_BOLD, "Text", part.text)
         }
       })
 
@@ -171,6 +168,7 @@ export const RunCommand = cmd({
         ],
       })
 
+      const isPiped = !process.stdout.isTTY
       if (isPiped) {
         const match = result.parts.findLast((x) => x.type === "text")
         if (match) process.stdout.write(match.text)
