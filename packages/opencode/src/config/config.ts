@@ -117,7 +117,8 @@ export namespace Config {
       $schema: z.string().optional().describe("JSON schema reference for configuration validation"),
       theme: z.string().optional().describe("Theme name to use for the interface"),
       keybinds: Keybinds.optional().describe("Custom keybind configurations"),
-      autoshare: z.boolean().optional().describe("Share newly created sessions automatically"),
+      sharing: z.enum(["auto", "disabled"]).optional().describe("Control sharing behavior: 'auto' enables automatic sharing, 'disabled' disables all sharing"),
+      autoshare: z.boolean().optional().describe("@deprecated Use 'sharing' field instead. Share newly created sessions automatically"),
       autoupdate: z.boolean().optional().describe("Automatically update to the latest version"),
       disabled_providers: z.array(z.string()).optional().describe("Disable providers that are loaded automatically"),
       model: z.string().describe("Model to use in the format of provider/model, eg anthropic/claude-2").optional(),
@@ -257,5 +258,15 @@ export namespace Config {
 
   export function get() {
     return state()
+  }
+
+  export function isSharingEnabled(config: Info): boolean {
+    // If sharing is explicitly set, use that value
+    if (config.sharing !== undefined) {
+      return config.sharing === "auto"
+    }
+    
+    // Fall back to deprecated autoshare field for backward compatibility
+    return config.autoshare === true
   }
 }
