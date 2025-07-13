@@ -53,17 +53,18 @@ export namespace Storage {
       })
       for (const file of files) {
         try {
-          const info = await Bun.file(file).json()
-          if (!info.parts) continue
-          for (const part of info.parts) {
+          const { parts, ...info } = await Bun.file(file).json()
+          if (!parts) continue
+          for (const part of parts) {
             const id = Identifier.ascending("part")
             await Bun.write(
               [dir, "session", "part", info.sessionID, info.id, id + ".json"].join("/"),
               JSON.stringify({
+                ...part,
                 id,
                 sessionID: info.sessionID,
                 messageID: info.id,
-                ...part,
+                ...(part.type === "tool" ? { callID: part.id } : {}),
               }),
             )
           }
