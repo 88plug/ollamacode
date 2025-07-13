@@ -150,6 +150,8 @@ export namespace Session {
         update(result.id, (draft) => {
           draft.share = share
         })
+      }).catch(() => {
+        // Silently ignore sharing errors during session creation
       })
     Bus.publish(Event.Updated, {
       info: result,
@@ -172,6 +174,11 @@ export namespace Session {
   }
 
   export async function share(id: string) {
+    const cfg = await Config.get()
+    if (cfg.share === "disabled") {
+      throw new Error("Sharing is disabled in configuration")
+    }
+    
     const session = await get(id)
     if (session.share) return session.share
     const share = await Share.create(id)
