@@ -93,10 +93,10 @@ export const RunCommand = cmd({
       UI.empty()
 
       const cfg = await Config.get()
-      if (Config.isSharingEnabled(cfg) || Flag.OPENCODE_AUTO_SHARE || (args.share && cfg.sharing !== "disabled")) {
+      if (cfg.share === "auto" || Flag.OPENCODE_AUTO_SHARE || (args.share && cfg.share !== "disabled")) {
         await Session.share(session.id)
         UI.println(UI.Style.TEXT_INFO_BOLD + "~  https://opencode.ai/s/" + session.id.slice(-8))
-      } else if (args.share && cfg.sharing === "disabled") {
+      } else if (args.share && cfg.share === "disabled") {
         UI.println(UI.Style.TEXT_ERROR_BOLD + "!  Sharing is disabled in configuration")
       }
       UI.empty()
