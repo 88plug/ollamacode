@@ -9,6 +9,7 @@ import { Config } from "../../config/config"
 import { bootstrap } from "../bootstrap"
 import { MessageV2 } from "../../session/message-v2"
 import { Mode } from "../../session/mode"
+import { Identifier } from "../../id/id"
 
 const TOOL: Record<string, [string, string]> = {
   todowrite: ["Todo", UI.Style.TEXT_WARNING_BOLD],
@@ -113,7 +114,7 @@ export const RunCommand = cmd({
       }
 
       Bus.subscribe(MessageV2.Event.PartUpdated, async (evt) => {
-        if (evt.properties.sessionID !== session.id) return
+        if (evt.properties.part.sessionID !== session.id) return
         const part = evt.properties.part
 
         if (part.type === "tool" && part.state.status === "completed") {
@@ -121,7 +122,7 @@ export const RunCommand = cmd({
           printEvent(color, tool, part.state.title || "Unknown")
         }
 
-        if (part.type === "text") {
+        if (part.type === "text" && part.time?.end) {
           if (part.text.includes("\n")) {
             UI.empty()
             UI.println(part.text)
@@ -148,8 +149,10 @@ export const RunCommand = cmd({
 
       const mode = args.mode ? await Mode.get(args.mode) : await Mode.list().then((x) => x[0])
 
+      const messageID = Identifier.ascending("message")
       const result = await Session.chat({
         sessionID: session.id,
+        messageID,
         ...(mode.model
           ? mode.model
           : {
@@ -159,6 +162,9 @@ export const RunCommand = cmd({
         mode: mode.name,
         parts: [
           {
+            id: Identifier.ascending("part"),
+            sessionID: session.id,
+            messageID: messageID,
             type: "text",
             text: message,
           },
