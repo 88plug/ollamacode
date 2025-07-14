@@ -161,17 +161,41 @@ export namespace Ripgrep {
           })
       }
       if (config.extension === "zip") {
-        const proc = Bun.spawn(["unzip", "-j", archivePath, "*/rg.exe", "-d", Global.Path.bin], {
-          cwd: Global.Path.bin,
-          stderr: "pipe",
-          stdout: "ignore",
-        })
-        await proc.exited
-        if (proc.exitCode !== 0)
-          throw new ExtractionFailedError({
-            filepath: archivePath,
-            stderr: await Bun.readableStreamToText(proc.stderr),
+        if (process.platform === "win32") {
+          const powershellCommand = `
+            Add-Type -AssemblyName System.IO.Compression.FileSystem;
+            $zip = [System.IO.Compression.ZipFile]::OpenRead('${archivePath.replace(/\\/g, '\\\\')}');
+            $entry = $zip.Entries | Where-Object { $_.Name -eq 'rg.exe' };
+            if ($entry) {
+              [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, '${path.join(Global.Path.bin, 'rg.exe').replace(/\\/g, '\\\\')}', $true);
+            }
+            $zip.Dispose();
+          `.trim()
+          
+          const proc = Bun.spawn(["powershell", "-Command", powershellCommand], {
+            cwd: Global.Path.bin,
+            stderr: "pipe",
+            stdout: "ignore",
           })
+          await proc.exited
+          if (proc.exitCode !== 0)
+            throw new ExtractionFailedError({
+              filepath: archivePath,
+              stderr: await Bun.readableStreamToText(proc.stderr),
+            })
+        } else {
+          const proc = Bun.spawn(["unzip", "-j", archivePath, "*/rg.exe", "-d", Global.Path.bin], {
+            cwd: Global.Path.bin,
+            stderr: "pipe",
+            stdout: "ignore",
+          })
+          await proc.exited
+          if (proc.exitCode !== 0)
+            throw new ExtractionFailedError({
+              filepath: archivePath,
+              stderr: await Bun.readableStreamToText(proc.stderr),
+            })
+        }
       }
       await fs.unlink(archivePath)
       if (!platformKey.endsWith("-win32")) await fs.chmod(filepath, 0o755)
