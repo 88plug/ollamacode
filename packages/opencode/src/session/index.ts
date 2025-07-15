@@ -325,10 +325,6 @@ export namespace Session {
     const model = await Provider.getModel(input.providerID, input.modelID)
     let msgs = await messages(input.sessionID)
     const session = await get(input.sessionID)
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
     const previous = msgs.filter((x) => x.info.role === "assistant").at(-1)?.info as MessageV2.Assistant
     const outputLimit = Math.min(model.info.limit.output, OUTPUT_TOKEN_MAX) || OUTPUT_TOKEN_MAX
 
@@ -903,10 +899,8 @@ export namespace Session {
     }
   }
 
-<<<<<<< Updated upstream
-  export async function revert(_input: { sessionID: string; messageID: string; part: number }) {}
-=======
   export async function revert(input: { sessionID: string; messageID: string; partID: string }) {
+    const all = await messages(input.sessionID)
     const message = await getMessage(input.sessionID, input.messageID)
     const parts = await getParts(input.sessionID, input.messageID)
     const index = parts.findIndex((x) => x.id === input.partID)
@@ -942,7 +936,6 @@ export namespace Session {
     })
     */
   }
->>>>>>> Stashed changes
 
   export async function summarize(input: { sessionID: string; providerID: string; modelID: string }) {
     using abort = lock(input.sessionID)
