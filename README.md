@@ -3,7 +3,7 @@
     <picture>
       <source srcset="packages/web/src/assets/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
       <source srcset="packages/web/src/assets/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/web/src/assets/logo-ornate-light.svg" alt="opencode logo">
+      <img src="packages/web/src/assets/logo-ornate-light.svg" alt="ollamacode logo">
     </picture>
   </a>
 </p>
@@ -13,7 +13,7 @@
   <a href="https://github.com/88plug/ollamacode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/88plug/ollamacode/publish.yml?style=flat-square&branch=dev" /></a>
 </p>
 
-[![opencode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+[![ollamacode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
 
 ---
 
