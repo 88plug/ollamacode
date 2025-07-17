@@ -1,12 +1,12 @@
-name: opencode
+name: ollamacode
 
 on:
   issue_comment:
     types: [created]
 
 jobs:
-  opencode:
-    if: startsWith(github.event.comment.body, 'hey opencode')
+  ollamacode:
+    if: startsWith(github.event.comment.body, 'hey ollamacode')
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -16,8 +16,8 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Run opencode
-        uses: sst/opencode/sdks/github@github-v1
+      - name: Run ollamacode
+        uses: 88plug/ollamacode/sdks/github@github-v1
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:

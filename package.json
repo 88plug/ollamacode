@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "opencode",
+  "name": "ollamacode",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.2.14",
@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sst/opencode"
+    "url": "https://github.com/88plug/ollamacode"
   },
   "license": "MIT",
   "prettier": {

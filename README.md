@@ -7,11 +7,10 @@
     </picture>
   </a>
 </p>
-<p align="center">AI coding agent, built for the terminal.</p>
+<p align="center">AI coding agent with local model support, built for the terminal.</p>
 <p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/sst/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/sst/opencode/publish.yml?style=flat-square&branch=dev" /></a>
+  <a href="https://www.npmjs.com/package/ollamacode-ai"><img alt="npm" src="https://img.shields.io/npm/v/ollamacode-ai?style=flat-square" /></a>
+  <a href="https://github.com/88plug/ollamacode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/88plug/ollamacode/publish.yml?style=flat-square&branch=dev" /></a>
 </p>
 
 [![opencode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
@@ -25,17 +24,25 @@
 curl -fsSL https://opencode.ai/install | bash
 
 # Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-brew install sst/tap/opencode      # macOS
-paru -S opencode-bin               # Arch Linux
+npm i -g ollamacode-ai@latest      # or bun/pnpm/yarn
+brew install 88plug/tap/ollamacode # macOS
+paru -S ollamacode-bin             # Arch Linux
 ```
 
 > [!TIP]
 > Remove versions older than 0.1.x before installing.
 
+### Local Model Support
+
+ollamacode supports local models via:
+- **Ollama**: Run models locally with `ollama serve` (auto-detected on localhost:11434)
+- **vLLM**: High-performance inference with `vllm serve` (auto-detected on localhost:8000)
+
+All existing cloud providers (Anthropic, OpenAI, etc.) are also supported.
+
 ### Documentation
 
-For more info on how to configure opencode [**head over to our docs**](https://opencode.ai/docs).
+For more info on configuration, see the upstream [opencode docs](https://opencode.ai/docs).
 
 ### Contributing
 

@@ -206,6 +206,68 @@ export namespace Provider {
         },
       }
     },
+    ollama: async (provider) => {
+      // Check if Ollama is running on localhost:11434
+      try {
+        const response = await fetch("http://localhost:11434/api/version", { 
+          signal: AbortSignal.timeout(2000) 
+        })
+        if (!response.ok) return { autoload: false }
+      } catch {
+        return { autoload: false }
+      }
+
+      // Set zero cost for local models
+      if (provider && provider.models) {
+        for (const model of Object.values(provider.models)) {
+          model.cost = {
+            input: 0,
+            output: 0,
+          }
+        }
+      }
+
+      return {
+        autoload: true,
+        options: {
+          baseURL: "http://localhost:11434/v1",
+          apiKey: "ollama", // Required but unused by Ollama
+        },
+      }
+    },
+    vllm: async (provider) => {
+      // Check if vLLM is running on localhost:8000
+      try {
+        const response = await fetch("http://localhost:8000/v1/models", { 
+          signal: AbortSignal.timeout(2000) 
+        })
+        if (!response.ok) return { autoload: false }
+      } catch {
+        return { autoload: false }
+      }
+
+      // Set zero cost for local models
+      if (provider && provider.models) {
+        for (const model of Object.values(provider.models)) {
+          model.cost = {
+            input: 0,
+            output: 0,
+          }
+        }
+      }
+
+      return {
+        autoload: true,
+        options: {
+          baseURL: "http://localhost:8000/v1",
+          apiKey: "vllm", // Required by OpenAI client
+        },
+        async getModel(sdk: any, modelID: string) {
+          // Support vLLM extra parameters via responses method
+          return sdk.responses ? sdk.responses(modelID) : sdk.languageModel(modelID)
+        },
+      }
+    },
   }
 
   const state = App.state("provider", async () => {
