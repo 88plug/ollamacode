@@ -45,8 +45,8 @@ jobs:
           echo "${{ secrets.AUR_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts
-          git config --global user.email "opencode@sst.dev"
-          git config --global user.name "opencode"
+          git config --global user.email "ollamacode@88plug.com"
+          git config --global user.name "ollamacode"
 
       - name: Publish
         run: |
@@ -58,6 +58,6 @@ jobs:
           fi
         working-directory: ./packages/opencode
         env:
-          GITHUB_TOKEN: ${{ secrets.SST_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AUR_KEY: ${{ secrets.AUR_KEY }}
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
